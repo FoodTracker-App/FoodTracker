@@ -28,7 +28,7 @@ const Auth = () => {
 
   // Accept both HTMLInputElement and HTMLTextAreaElement to satisfy your component's union type
   const handleChange = (
-    e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>
+    e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>,
   ) => {
     const { name, value } = e.target;
     setFormData((prev) => ({
@@ -60,19 +60,17 @@ const Auth = () => {
         {/* Left/Hero Panel */}
         <div
           className={`flex flex-col justify-between bg-green-500  rounded-b-3xl md:rounded-b-none p-8 text-white transition-all duration-700 ease-in-out md:p-12 ${
-            isSignUp 
-              ? "md:order-1 md:translate-x-0 md:rounded-r-4xl" 
-              : "md:order-2 md:-translate-x-0 md:rounded-l-4xl"
-          }`}
-        >
+            isSignUp
+              ? "md:order-1 md:translate-x-0 md:rounded-r-4xl"
+              : "md:order-2 md:translate-x-0 md:rounded-l-4xl"
+          }`}>
           <div className="text-xl font-medium">
             <span className="text-3xl font-bold text-white">X</span>pire
           </div>
 
-          <div 
+          <div
             key={tab}
-            className="my-auto flex flex-col items-center justify-center py-12 text-center transition-all duration-500 ease-in-out animate-fadeIn"
-          >
+            className="my-auto flex flex-col items-center justify-center py-12 text-center transition-all duration-500 ease-in-out animate-fadeIn">
             <h2 className="mb-4 text-3xl font-bold md:text-5xl">
               {isSignUp ? "Welcome Back!" : "Hello, Friend!"}
             </h2>
@@ -85,8 +83,7 @@ const Auth = () => {
               variant="ghost"
               type="button"
               onClick={toggleTab}
-              className="border border-white text-white transition-colors hover:bg-white hover:text-green-600"
-            >
+              className="border border-white text-white transition-colors hover:bg-white hover:text-green-600">
               {isSignUp ? "Sign In" : "Sign Up"}
             </Button>
           </div>
@@ -99,15 +96,13 @@ const Auth = () => {
         {/* Right/Form Panel */}
         <div
           className={`flex items-center justify-center p-6 transition-all duration-700 ease-in-out md:p-12 ${
-            isSignUp 
-              ? "md:order-2 md:translate-x-0" 
+            isSignUp
+              ? "md:order-2 md:translate-x-0"
               : "md:order-1 md:translate-x-0"
-          }`}
-        >
-          <div 
+          }`}>
+          <div
             key={tab}
-            className="w-full max-w-md space-y-6 transition-all duration-500 ease-in-out animate-fadeIn"
-          >
+            className="w-full max-w-md space-y-6 transition-all duration-500 ease-in-out animate-fadeIn">
             <div className="text-center">
               <h1 className="text-3xl font-bold text-green-800 md:text-4xl">
                 {isSignUp ? "Create An Account" : "Sign In to Xpire"}
