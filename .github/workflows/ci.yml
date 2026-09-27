@@ -39,6 +39,15 @@ jobs:
       - name: Build Docker image
         run: docker build -t foodtracker-backend:ci ./backend
 
+      - name: Create CI environment file
+        run: |
+          cat > .env <<'EOF'
+          POSTGRES_DB=foodtracker
+          POSTGRES_USER=foodtracker
+          POSTGRES_PASSWORD=ci-password
+          JWT_ACCESS_SECRET=ci-only-secret
+          EOF
+
       - name: Start application stack
         run: docker compose up -d --build
 
