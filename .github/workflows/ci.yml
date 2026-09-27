@@ -54,23 +54,24 @@ jobs:
       - name: Check running containers
         run: docker compose ps
 
-      - name: Test backend API
+        - name: Test backend API
         run: |
           for i in {1..12}; do
-            status=$(curl -s -o /dev/null -w "%{http_code}" http://localhost:5000/api/products)
+            status=$(curl -s -o /dev/null -w "%{http_code}" http://localhost:5000/api/products || echo "000")
 
             if [ "$status" = "401" ]; then
               echo "Backend API is reachable and authentication middleware is working."
               exit 0
             fi
 
+            echo "Backend API returned status: $status. Retrying..."
             sleep 5
           done
 
           echo "Backend API did not become available"
+          docker compose ps
           docker compose logs
           exit 1
-
       - name: Stop application stack
         if: always()
         run: docker compose down -v
