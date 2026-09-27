@@ -54,7 +54,7 @@ jobs:
       - name: Check running containers
         run: docker compose ps
 
-        - name: Test backend API
+      - name: Test backend API
         run: |
           for i in {1..12}; do
             status=$(curl -s -o /dev/null -w "%{http_code}" http://localhost:5000/api/products || echo "000")
@@ -72,6 +72,7 @@ jobs:
           docker compose ps
           docker compose logs
           exit 1
+
       - name: Stop application stack
         if: always()
         run: docker compose down -v
