@@ -12,5 +12,22 @@ services:
     volumes:
       - foodtracker_postgres_data:/var/lib/postgresql/data
 
+  backend:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    container_name: foodtracker-backend
+    restart: unless-stopped
+    environment:
+      PORT: 5000
+      DATABASE_URL: postgresql://${POSTGRES_USER}:${POSTGRES_PASSWORD}@postgres:5432/${POSTGRES_DB}
+      NODE_ENV: development
+      JWT_ACCESS_SECRET: ${JWT_ACCESS_SECRET}
+      CLIENT_ORIGIN: http://localhost:5173
+    ports:
+      - "5000:5000"
+    depends_on:
+      - postgres
+
 volumes:
   foodtracker_postgres_data:
