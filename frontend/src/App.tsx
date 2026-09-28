@@ -1,8 +1,11 @@
-import Navbar from './components/Navbar'
+
 import './App.css'
 import Auth from './pages/Auth'
 import MainLayout from './utils/MainLayout'
 import { Route,Routes } from 'react-router-dom'
+import BatchIntakePage from './pages/IntakeForms'
+import AddProductPage from './pages/Product'
+import StockAdjustmentPage from './pages/StockAdjustment'
 
 
 function App() {
@@ -13,7 +16,9 @@ function App() {
         {/* Routes WITH Navbar */}
         <Route element={<MainLayout />}>
           <Route path="/" element={<>Hi</>} />
-          
+          <Route path ='/batches' element = {<BatchIntakePage/>}></Route>
+          <Route path ='/add' element = {<AddProductPage/>}></Route>
+          <Route path= '/adjustment' element = {<StockAdjustmentPage/>}></Route>
         </Route>
 
         {/* Routes WITHOUT Navbar */}
