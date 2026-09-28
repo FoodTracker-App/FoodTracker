@@ -9,6 +9,7 @@ import authRoutes from "./routes/authRoutes.js";
 import productRoutes from "./routes/productRoutes.js";
 import storageLocationRoutes from "./routes/storageLocationRoutes.js";
 import dashboardRoutes from "./routes/dashboardRoutes.js";
+import stockMovementRoutes from "./routes/stockMovementRoutes.js";
 import batchRoutes from "./routes/batchRoutes.js";
 import { requireAuth } from "./middleware/requireAuth.js";
 import { errorHandler } from "./middleware/errorHandler.js";
@@ -62,7 +63,7 @@ app.use(express.json());
 app.use("/api/auth", authRoutes);
 app.use("/api/products", requireAuth, productRoutes);
 app.use("/api/storage-locations", requireAuth, storageLocationRoutes);
-app.use("/api/batches", requireAuth, batchRoutes);
+app.use("/api/batches", requireAuth, stockMovementRoutes, batchRoutes);
 app.use("/api/dashboard", requireAuth, dashboardRoutes);
 
 app.use((req, res, next) =>

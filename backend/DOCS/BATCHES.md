@@ -1,5 +1,7 @@
 # Batch Intake and Stock Listing (FET-08)
 
+FET-12 adds [stock adjustments and per-batch movement history](./STOCK_ADJUSTMENTS.md). Intake and PATCH behavior documented here is unchanged.
+
 All endpoints require authentication via the Bearer token or session cookie issued by `POST /api/auth/login`. In Postman, choose **Authorization → Bearer Token** and paste the returned `accessToken`; browser clients using cookies send `credentials: "include"`. See [AUTH.md](./AUTH.md). Responses use `Cache-Control: no-store` and the existing origin policy.
 
 ## Endpoints
@@ -36,7 +38,7 @@ Pagination matches products: page defaults to 1, page size to 20, maximum page s
 
 PATCH validates the path UUID before body validation, then checks batch existence before a supplied replacement location. It updates only location/expiry and explicitly sets `updatedAt`, preserving quantity, product, creator, manufacturer lot, and received time. It writes no movement or audit row. Empty bodies fail.
 
-Supplying `quantity`, `quantityChange`, `type`, `reason`, `batchId`, `performedById`, `createdAt`, `stockMovements`, or `initialMovement` on PATCH rejects the entire request with `400 QUANTITY_NOT_EDITABLE`, even if another body field is also invalid. Other unsupported fields return `400 VALIDATION_ERROR`. Stock adjustment, movement history retrieval, and batch deletion are outside this issue.
+Supplying `quantity`, `quantityChange`, `type`, `reason`, `batchId`, `performedById`, `createdAt`, `stockMovements`, or `initialMovement` on PATCH rejects the entire request with `400 QUANTITY_NOT_EDITABLE`, even if another body field is also invalid. Other unsupported fields return `400 VALIDATION_ERROR`. Stock adjustment and movement history retrieval are provided separately by [FET-12](./STOCK_ADJUSTMENTS.md). Batch deletion remains outside scope.
 
 ## Errors
 
