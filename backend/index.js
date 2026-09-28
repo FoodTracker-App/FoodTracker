@@ -22,7 +22,13 @@ const PORT = process.env.PORT || 5000;
 app.use(helmet());
 app.use(cors({ origin, credentials: true }));
 app.use(
-  ["/api/auth", "/api/products", "/api/storage-locations", "/api/batches", "/api/dashboard"],
+  [
+    "/api/auth",
+    "/api/products",
+    "/api/storage-locations",
+    "/api/batches",
+    "/api/dashboard",
+  ],
   (req, res, next) => {
     res.set("Cache-Control", "no-store");
     next();

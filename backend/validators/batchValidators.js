@@ -17,17 +17,25 @@ const expiryDate = Joi.string()
   })
   .messages({
     "string.pattern.base": "expiryDate must be a date in YYYY-MM-DD format.",
-    "date.calendar": "expiryDate must be a valid calendar date in years 0001–9999.",
+    "date.calendar":
+      "expiryDate must be a valid calendar date in years 0001–9999.",
   });
 
 export const createBatchSchema = Joi.object({
   productId: uuid.required(),
   locationId: uuid.required(),
-  quantity: Joi.number().integer().positive().max(2147483647).strict().required(),
+  quantity: Joi.number()
+    .integer()
+    .positive()
+    .max(2147483647)
+    .strict()
+    .required(),
   expiryDate: expiryDate.required(),
   manufacturerLot: Joi.string().trim().max(100).allow("", null),
   reason: Joi.string().trim().min(1).max(500),
-}).unknown(false).required();
+})
+  .unknown(false)
+  .required();
 
 export const updateBatchSchema = Joi.object({
   locationId: uuid,
@@ -41,13 +49,19 @@ export const updateBatchSchema = Joi.object({
   createdAt: Joi.forbidden(),
   stockMovements: Joi.forbidden(),
   initialMovement: Joi.forbidden(),
-}).unknown(false).min(1).required().messages({
-  "object.min": "Provide at least one of locationId or expiryDate.",
-});
+})
+  .unknown(false)
+  .min(1)
+  .required()
+  .messages({
+    "object.min": "Provide at least one of locationId or expiryDate.",
+  });
 
 export const batchIdSchema = Joi.object({
   id: uuid.required(),
-}).unknown(false).required();
+})
+  .unknown(false)
+  .required();
 
 export const listBatchesSchema = Joi.object({
   q: Joi.string().trim().max(100).allow(""),
@@ -56,10 +70,13 @@ export const listBatchesSchema = Joi.object({
   locationId: uuid,
   page: Joi.number().integer().min(1).max(2147483647).default(1),
   pageSize: Joi.number().integer().min(1).max(100).default(20),
-}).unknown(false).custom((value, helpers) =>
-  (value.page - 1) * value.pageSize <= 2147483647
-    ? value
-    : helpers.error("pagination.offset"),
-).messages({
-  "pagination.offset": "Requested pagination offset is too large.",
-});
+})
+  .unknown(false)
+  .custom((value, helpers) =>
+    (value.page - 1) * value.pageSize <= 2147483647
+      ? value
+      : helpers.error("pagination.offset"),
+  )
+  .messages({
+    "pagination.offset": "Requested pagination offset is too large.",
+  });
