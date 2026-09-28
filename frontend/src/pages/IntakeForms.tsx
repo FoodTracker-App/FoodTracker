@@ -271,8 +271,8 @@ export default function BatchIntakePage() {
               <div className="flex items-center justify-end gap-3 border-t border-gray-100 pt-6">
                 <Button
                   type="button"
-                  variant="danger"
-                  onClick={() => navigate("/inventory/batches")}
+                  variant="secondary"
+                  // onClick={() => navigate("/inventory/batches")}
                   disabled={isSubmitting}
                 >
                   Cancel
