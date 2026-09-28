@@ -7,6 +7,7 @@ import BatchIntakePage from './pages/IntakeForms'
 import AddProductPage from './pages/Product'
 import StockAdjustmentPage from './pages/StockAdjustment'
 import NotFoundPage from './pages/NotFoundPage'
+import LocationsPage from './pages/Location'
 
 
 function App() {
@@ -20,7 +21,7 @@ function App() {
           <Route path ='/batches' element = {<BatchIntakePage/>}></Route>
           <Route path ='/add' element = {<AddProductPage/>}></Route>
           <Route path= '/adjustment' element = {<StockAdjustmentPage/>}></Route>
-          <Route path ='/location' element = {<>Location</>}></Route>
+          <Route path ='/location' element = {<LocationsPage/>}></Route>
           <Route path='*' element = {<NotFoundPage/>}></Route>
         </Route>
 
