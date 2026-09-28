@@ -1,3 +1,4 @@
+import { EXPIRY_BANDS } from "../utils/expiryClassification.js";
 import Joi from "joi";
 
 const uuid = Joi.string().uuid();
@@ -49,6 +50,8 @@ export const batchIdSchema = Joi.object({
 }).unknown(false).required();
 
 export const listBatchesSchema = Joi.object({
+  q: Joi.string().trim().max(100).allow(""),
+  status: Joi.string().valid(...EXPIRY_BANDS.map(({ status }) => status)),
   productId: uuid,
   locationId: uuid,
   page: Joi.number().integer().min(1).max(2147483647).default(1),
