@@ -7,7 +7,8 @@ import { LayoutDashboard,
   Bell,
   Menu,
   X,
-  User } from 'lucide-react';
+  User,
+MapPin } from 'lucide-react';
 
 
 interface NavItem {
@@ -18,7 +19,8 @@ interface NavItem {
 
 const navLinks: NavItem[] = [
   { label: 'Dashboard', href: '/', icon: LayoutDashboard },
-  { label: 'Add Product', href: '/add', icon: PackagePlus },
+  { label: 'Product', href: '/add', icon: PackagePlus },
+  {label: "Location", href: "/location", icon: MapPin},
   { label: 'Batches', href: '/batches', icon:Boxes  },
  {label: 'Stock Adjustments', href: '/adjustment', icon: ArrowLeftRightIcon },
  {label: 'Expiry Alert', href: '/alert', icon: Bell }
@@ -65,7 +67,7 @@ const Navbar = () => {
                       : 'border-slate-200 bg-white text-slate-700 shadow-sm hover:border-slate-300 hover:bg-slate-50 hover:text-slate-900'
                   }`}
                 >
-                  <Icon className={`h-4 w-4 ${active ? 'text-white' : 'text-slate-500'}`} />
+                { active && <Icon className={`h-4 w-4 ${active ? 'text-white' : 'text-slate-500'}`} /> }
                   {link.label}
                 </Link>
               );
