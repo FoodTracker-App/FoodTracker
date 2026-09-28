@@ -41,12 +41,12 @@ const Navbar = () => {
   return (
     <>
       <header className="fixed top-0 z-40 h-16 w-full border-b border-slate-200/80 bg-white px-4  backdrop-blur-md md:px-6 lg:py-1">
-        <div className="mx-auto flex h-full max-w-7xl items-center justify-between gap-4">
+        <div className=" flex h-full w-full items-center justify-between gap-4 ">
           <Link to="/" aria-label="Xpire Home" className="w-20 h-full ">
             {/* <span className='text-4xl font-bold text-green-700 drop-shadow-[0_2px_8px_rgba(0,0,0,0,0.6)] '>X</span>
             <span className='text-green-600'>pire</span> */}
             <img
-              src="/xpire.png"
+              src="xpire.png"
               alt="Xpire Logo"
               className="h-full w-full object-contain"
             />
