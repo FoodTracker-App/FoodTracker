@@ -14,6 +14,7 @@ function App() {
 
   return (
     <>
+    <Route path="/auth" element={<Auth />} />
         <Routes>
         {/* Routes WITH Navbar */}
         <Route element={<MainLayout />}>
@@ -26,7 +27,7 @@ function App() {
         </Route>
 
         {/* Routes WITHOUT Navbar */}
-        <Route path="/auth" element={<Auth />} />
+        
       </Routes>
    
     </>
