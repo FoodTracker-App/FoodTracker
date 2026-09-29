@@ -60,10 +60,11 @@ const Auth = () => {
         {/* Left/Hero Panel */}
         <div
           className={`flex flex-col justify-between bg-green-500  rounded-b-3xl md:rounded-b-none p-8 text-white transition-all duration-700 ease-in-out md:p-12 ${
-            isSignUp
-              ? "md:order-1 md:translate-x-0 md:rounded-r-4xl"
+            isSignUp 
+              ? "md:order-1 md:translate-x-0 md:rounded-r-4xl" 
               : "md:order-2 md:translate-x-0 md:rounded-l-4xl"
-          }`}>
+          }`}
+        >
           <div className="text-xl font-medium">
             <span className="text-3xl font-bold text-white">X</span>pire
           </div>
