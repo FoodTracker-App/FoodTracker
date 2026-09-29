@@ -1,4 +1,4 @@
-import { useId } from 'react';
+import { useId } from "react";
 
 function toName(label: string | undefined, fallback: string) {
   if (!label) return fallback;
@@ -6,8 +6,8 @@ function toName(label: string | undefined, fallback: string) {
     String(label)
       .trim()
       .toLowerCase()
-      .replace(/[^a-z0-9]+/g, '_')
-      .replace(/^_+|_+$/g, '') || fallback
+      .replace(/[^a-z0-9]+/g, "_")
+      .replace(/^_+|_+$/g, "") || fallback
   );
 }
 
@@ -21,34 +21,42 @@ type BaseProps = {
 
 // Discriminate by the `as` prop so onChange gets the proper event type
 type InputAsInputElement = BaseProps & {
-  as?: 'input';
+  as?: "input";
 } & React.InputHTMLAttributes<HTMLInputElement>;
 
 type InputAsTextareaElement = BaseProps & {
-  as: 'textarea';
+  as: "textarea";
 } & React.TextareaHTMLAttributes<HTMLTextAreaElement>;
 
 export type InputProps = InputAsInputElement | InputAsTextareaElement;
 
 export default function Input(props: InputProps) {
-  const { className = '', label, error, as = 'input', id, name, ...rest } = props;
+  const {
+    className = "",
+    label,
+    error,
+    as = "input",
+    id,
+    name,
+    ...rest
+  } = props;
   const autoId = useId();
   const inputId = id || `field-${autoId}`;
   const inputName = name || toName(label, inputId);
 
-  const sharedClasses = `w-full rounded-lg border border-slate-300 bg-white px-3 py-2 text-sm text-slate-900 placeholder-slate-400 shadow-sm transition focus:border-blue-400 focus:outline-none focus:ring-2 focus:ring-blue-100 ${
-    error ? 'border-red-400 focus:ring-red-100' : ''
+  const sharedClasses = `w-full rounded-lg border border-gray-300 bg-white px-3 py-2.5 text-sm text-slate-900 placeholder-slate-400  transition focus:border-blue-400 focus:outline-none focus:ring-2 focus:ring-blue-100 ${
+    error ? "border-red-400 focus:ring-red-100" : ""
   } ${className}`;
 
   return (
     <label className="block" htmlFor={inputId}>
       {label && (
-        <span className="mb-1 block text-xs font-semibold uppercase tracking-wide text-slate-500">
+        <span className="mb-1.5 block text-sm font-medium text-gray-700 ">
           {label}
         </span>
       )}
 
-      {as === 'textarea' ? (
+      {as === "textarea" ? (
         <textarea
           id={inputId}
           name={inputName}
@@ -64,7 +72,9 @@ export default function Input(props: InputProps) {
         />
       )}
 
-      {error && <span className="mt-1 block text-xs text-red-600">{error}</span>}
+      {error && (
+        <span className="mt-1 block text-xs text-red-600">{error}</span>
+      )}
     </label>
   );
 }

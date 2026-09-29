@@ -5,7 +5,7 @@ import { Link, useNavigate } from "react-router-dom";
 
 import type { Product, StorageLocation } from "../types/inventory";
 import Input from "../components/UI/Input";
-import  Button  from "../components/UI/Button";
+import Button from "../components/UI/Button";
 
 export type BatchIntakeValues = {
   product_id: string;
@@ -68,7 +68,7 @@ export default function BatchIntakePage() {
 
   // Generic input change handler
   function handleChange(
-    e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>
+    e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>,
   ) {
     const { name, value, type } = e.target;
 
@@ -141,21 +141,21 @@ export default function BatchIntakePage() {
   }
 
   const selectClasses =
-    "w-full rounded-md border border-gray-300 bg-white px-3 py-2 text-sm text-gray-900 shadow-sm focus:border-indigo-500 focus:outline-none focus:ring-1 focus:ring-indigo-500 disabled:cursor-not-allowed disabled:bg-gray-100";
+    "w-full rounded-md border border-gray-300  text-gray-500 px-3 py-3 text-sm font-regular focus:border-indigo-500 focus:outline-none focus:ring-1 focus:ring-indigo-500 disabled:cursor-not-allowed disabled:bg-gray-100";
 
   return (
-    <div className="min-h-screen bg-gray-50 py-8">
+    <div className="min-h-screen bg-gray-200/30 py-8 mt-5">
       <div className="mx-auto max-w-3xl px-4 sm:px-6 lg:px-8">
         {/* Navigation Breadcrumbs */}
-       
 
         {/* Page Header */}
         <div className="mt-7 mb-6">
-          <h1 className="text-2xl font-bold tracking-tight text-gray-900">
+          <h1 className="text-2xl font-bold tracking-tight text-gray-800">
             Batch Intake
           </h1>
           <p className="mt-1 text-sm text-gray-500">
-            Record incoming stock, verify expiry dates, and assign to designated storage locations.
+            Record incoming stock, verify expiry dates, and assign to designated
+            storage locations.
           </p>
         </div>
 
@@ -170,11 +170,14 @@ export default function BatchIntakePage() {
           </div>
         ) : (
           /* Form Card */
-          <div className="rounded-lg border border-gray-200 bg-white shadow-sm">
+          <div className="rounded-lg border border-gray-200 bg-white ">
             <form onSubmit={handleSubmit} className="space-y-6 p-6 sm:p-8">
               {/* Product Select */}
               <div className="space-y-1">
-                <label htmlFor="product_id" className="block text-sm font-medium text-gray-700">
+                <label
+                  htmlFor="product_id"
+                  className="block text-sm font-medium text-gray-700"
+                >
                   Product <span className="text-red-500">*</span>
                 </label>
                 <select
@@ -198,7 +201,10 @@ export default function BatchIntakePage() {
 
               {/* Storage Location Select */}
               <div className="space-y-1">
-                <label htmlFor="location_id" className="block text-sm font-medium text-gray-700">
+                <label
+                  htmlFor="location_id"
+                  className="block text-sm font-medium text-gray-700"
+                >
                   Storage Location <span className="text-red-500">*</span>
                 </label>
                 <select

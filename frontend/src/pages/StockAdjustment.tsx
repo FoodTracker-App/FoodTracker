@@ -16,11 +16,31 @@ export type StockAdjustmentFormData = {
 
 type FormErrors = Partial<Record<keyof StockAdjustmentFormData, string>>;
 
-const MOVEMENT_TYPES: { label: string; value: StockMovementType; isDeduction: boolean }[] = [
-  { label: "Damage (Physical breakage / contamination)", value: "DAMAGE", isDeduction: true },
-  { label: "Disposal (Expired or spoiled inventory)", value: "DISPOSAL", isDeduction: true },
-  { label: "Stock Count Correction (Discrepancy)", value: "CORRECTION", isDeduction: false },
-  { label: "Manual Receipt (Found stock)", value: "RECEIPT", isDeduction: false },
+const MOVEMENT_TYPES: {
+  label: string;
+  value: StockMovementType;
+  isDeduction: boolean;
+}[] = [
+  {
+    label: "Damage (Physical breakage / contamination)",
+    value: "DAMAGE",
+    isDeduction: true,
+  },
+  {
+    label: "Disposal (Expired or spoiled inventory)",
+    value: "DISPOSAL",
+    isDeduction: true,
+  },
+  {
+    label: "Stock Count Correction (Discrepancy)",
+    value: "CORRECTION",
+    isDeduction: false,
+  },
+  {
+    label: "Manual Receipt (Found stock)",
+    value: "RECEIPT",
+    isDeduction: false,
+  },
   { label: "Sale Adjustment / Return", value: "SALE", isDeduction: false },
 ];
 
@@ -98,7 +118,9 @@ export default function StockAdjustmentPage() {
         setBatches(mockBatches);
       } catch (err) {
         console.error(err);
-        setLoadError("Could not retrieve active inventory batches. Please refresh.");
+        setLoadError(
+          "Could not retrieve active inventory batches. Please refresh.",
+        );
       } finally {
         setIsLoadingBatches(false);
       }
@@ -110,7 +132,7 @@ export default function StockAdjustmentPage() {
   // Currently selected batch
   const selectedBatch = useMemo(
     () => batches.find((b) => b.id === formData.batch_id),
-    [batches, formData.batch_id]
+    [batches, formData.batch_id],
   );
 
   // Projected new stock calculation
@@ -121,7 +143,9 @@ export default function StockAdjustmentPage() {
   }, [selectedBatch, formData.quantity_change]);
 
   function handleChange(
-    e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement>
+    e: React.ChangeEvent<
+      HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement
+    >,
   ) {
     const { name, value, type } = e.target;
 
@@ -174,7 +198,8 @@ export default function StockAdjustmentPage() {
     if (!values.reason.trim()) {
       newErrors.reason = "A reason or audit justification is required";
     } else if (values.reason.trim().length < 5) {
-      newErrors.reason = "Please provide a more descriptive reason (min 5 characters)";
+      newErrors.reason =
+        "Please provide a more descriptive reason (min 5 characters)";
     }
 
     return newErrors;
@@ -207,27 +232,28 @@ export default function StockAdjustmentPage() {
       navigate("/inventory/movements");
     } catch (err) {
       console.error(err);
-      setServerError("Failed to record the stock adjustment. Please try again.");
+      setServerError(
+        "Failed to record the stock adjustment. Please try again.",
+      );
     } finally {
       setIsSubmitting(false);
     }
   }
 
   const selectClasses =
-    "w-full rounded-lg border border-slate-300 bg-white px-3 py-2 text-sm text-slate-900 shadow-sm transition focus:border-blue-400 focus:outline-none focus:ring-2 focus:ring-blue-100 disabled:cursor-not-allowed disabled:bg-slate-100";
+    "w-full rounded-lg border border-gray-300 bg-white px-3 py-2.5 mt-1 text-sm text-slate-700 transition focus:border-blue-400 focus:outline-none focus:ring-2 focus:ring-blue-100 disabled:cursor-not-allowed disabled:bg-slate-100";
 
   return (
     <div className="min-h-screen bg-slate-50 py-8">
       <div className="mt-10 mx-auto max-w-2xl px-4 sm:px-6 lg:px-8">
-        
-
         {/* Page Header */}
         <div className="mb-6">
           <h1 className="text-2xl font-bold tracking-tight text-slate-900">
             Stock Adjustment
           </h1>
           <p className="mt-1 text-sm text-slate-500">
-            Log inventory discrepancies, damage, disposal, or manual count corrections.
+            Log inventory discrepancies, damage, disposal, or manual count
+            corrections.
           </p>
         </div>
 
@@ -239,7 +265,7 @@ export default function StockAdjustmentPage() {
         )}
 
         {isLoadingBatches ? (
-          <div className="flex h-48 items-center justify-center rounded-xl border border-slate-200 bg-white shadow-sm">
+          <div className="flex h-48 items-center justify-center rounded-xl border border-slate-200 bg-white ">
             <p className="text-sm text-slate-500">Loading active batches...</p>
           </div>
         ) : loadError ? (
@@ -247,14 +273,13 @@ export default function StockAdjustmentPage() {
             {loadError}
           </div>
         ) : (
-          <div className="rounded-xl border border-slate-200 bg-white p-6 shadow-sm sm:p-8">
+          <div className="rounded-xl border border-slate-200 bg-white p-6 sm:p-8">
             <form onSubmit={handleSubmit} className="space-y-6">
-              
               {/* Batch Selector */}
               <div>
                 <label
                   htmlFor="batch_id"
-                  className="mb-1 block text-xs font-semibold uppercase tracking-wide text-slate-500"
+                  className="mb-1 block text-sm font-medium  text-slate-500"
                 >
                   Target Batch <span className="text-red-500">*</span>
                 </label>
@@ -268,7 +293,9 @@ export default function StockAdjustmentPage() {
                   <option value="">Select a batch to adjust</option>
                   {batches.map((batch) => (
                     <option key={batch.id} value={batch.id}>
-                      {batch.product?.name || "Unknown Product"} (Lot: {batch.manufacturer_lot || "N/A"}) — Current: {batch.quantity} {batch.product?.stock_unit || "units"}
+                      {batch.product?.name || "Unknown Product"} (Lot:{" "}
+                      {batch.manufacturer_lot || "N/A"}) — Current:{" "}
+                      {batch.quantity} {batch.product?.stock_unit || "units"}
                     </option>
                   ))}
                 </select>
@@ -279,23 +306,32 @@ export default function StockAdjustmentPage() {
 
               {/* Selected Batch Summary Card */}
               {selectedBatch && (
-                <div className="rounded-lg border border-slate-200 bg-slate-50 p-4 text-xs text-slate-600 space-y-1">
+                <div className="rounded-lg border border-slate-200 bg-slate-50 p-4 text-sm text-slate-600 space-y-1">
                   <div className="flex justify-between">
-                    <span className="font-medium text-slate-700">Product Code:</span>
+                    <span className="font-medium text-slate-700">
+                      Product Code:
+                    </span>
                     <span>{selectedBatch.product?.product_code}</span>
                   </div>
                   <div className="flex justify-between">
-                    <span className="font-medium text-slate-700">Location:</span>
+                    <span className="font-medium text-slate-700">
+                      Location:
+                    </span>
                     <span>{selectedBatch.location?.name || "Unassigned"}</span>
                   </div>
                   <div className="flex justify-between">
-                    <span className="font-medium text-slate-700">Current Balance:</span>
+                    <span className="font-medium text-slate-700">
+                      Current Balance:
+                    </span>
                     <span className="font-semibold text-slate-900">
-                      {selectedBatch.quantity} {selectedBatch.product?.stock_unit}
+                      {selectedBatch.quantity}{" "}
+                      {selectedBatch.product?.stock_unit}
                     </span>
                   </div>
                   <div className="flex justify-between">
-                    <span className="font-medium text-slate-700">Expiry Date:</span>
+                    <span className="font-medium text-slate-700">
+                      Expiry Date:
+                    </span>
                     <span>{selectedBatch.expiry_date}</span>
                   </div>
                 </div>
@@ -306,7 +342,7 @@ export default function StockAdjustmentPage() {
                 <div>
                   <label
                     htmlFor="type"
-                    className="mb-1 block text-xs font-semibold uppercase tracking-wide text-slate-500"
+                    className="mb-1 text-sm font-medium  text-slate-700"
                   >
                     Adjustment Type <span className="text-red-500">*</span>
                   </label>
@@ -338,7 +374,9 @@ export default function StockAdjustmentPage() {
                     error={errors.quantity_change}
                   />
                   <p className="mt-1 text-[11px] text-slate-500">
-                    Use negative numbers for deductions (e.g. <span className="font-mono text-slate-700">-5</span>) and positive for additions.
+                    Use negative numbers for deductions (e.g.{" "}
+                    <span className="font-mono text-slate-700">-5</span>) and
+                    positive for additions.
                   </p>
                 </div>
               </div>
@@ -375,7 +413,7 @@ export default function StockAdjustmentPage() {
               {/* Form Actions */}
               <div className="flex items-center justify-end gap-3 border-t border-slate-100 pt-6">
                 <Button
-                variant="secondary"
+                  variant="secondary"
                   type="button"
                   onClick={() => navigate("/inventory/movements")}
                   disabled={isSubmitting}
