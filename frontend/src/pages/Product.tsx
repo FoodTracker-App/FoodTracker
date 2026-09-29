@@ -50,7 +50,10 @@ export default function ProductsPage() {
   });
   const [errors, setErrors] = useState<FormErrors>({});
   const [isSubmitting, setIsSubmitting] = useState(false);
-  const [statusMessage, setStatusMessage] = useState<{ text: string; type: "success" | "error" } | null>(null);
+  const [statusMessage, setStatusMessage] = useState<{
+    text: string;
+    type: "success" | "error";
+  } | null>(null);
 
   // Edit / Rename Modal State
   const [editingProduct, setEditingProduct] = useState<Product | null>(null);
@@ -66,13 +69,13 @@ export default function ProductsPage() {
       (p) =>
         p.name.toLowerCase().includes(q) ||
         p.product_code.toLowerCase().includes(q) ||
-        (p.description && p.description.toLowerCase().includes(q))
+        (p.description && p.description.toLowerCase().includes(q)),
     );
   }, [products, searchQuery]);
 
   // Handle Create Form Input
   function handleFormChange(
-    e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>
+    e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>,
   ) {
     const { name, value } = e.target;
     setFormData((prev) => ({ ...prev, [name]: value }));
@@ -83,7 +86,8 @@ export default function ProductsPage() {
 
   function validate(values: AddProductFormData): FormErrors {
     const errs: FormErrors = {};
-    if (!values.product_code.trim()) errs.product_code = "Product code is required";
+    if (!values.product_code.trim())
+      errs.product_code = "Product code is required";
     if (!values.name.trim()) errs.name = "Product name is required";
     if (!values.stock_unit.trim()) errs.stock_unit = "Stock unit is required";
     return errs;
@@ -112,11 +116,22 @@ export default function ProductsPage() {
       };
 
       setProducts((prev) => [newProduct, ...prev]);
-      setFormData({ product_code: "", name: "", stock_unit: "", description: "" });
-      setStatusMessage({ text: `Product "${newProduct.name}" added successfully.`, type: "success" });
+      setFormData({
+        product_code: "",
+        name: "",
+        stock_unit: "",
+        description: "",
+      });
+      setStatusMessage({
+        text: `Product "${newProduct.name}" added successfully.`,
+        type: "success",
+      });
       setActiveTab("search"); // Switch tab to view catalog
     } catch {
-      setStatusMessage({ text: "Failed to add product. Please try again.", type: "error" });
+      setStatusMessage({
+        text: "Failed to add product. Please try again.",
+        type: "error",
+      });
     } finally {
       setIsSubmitting(false);
     }
@@ -147,8 +162,8 @@ export default function ProductsPage() {
         prev.map((p) =>
           p.id === editingProduct.id
             ? { ...p, name: renameValue.trim(), stock_unit: renameUnit.trim() }
-            : p
-        )
+            : p,
+        ),
       );
       setEditingProduct(null);
     }
@@ -211,7 +226,7 @@ export default function ProductsPage() {
         {/* TAB 1: Search, Filter & Rename */}
         {activeTab === "search" && (
           <div className="space-y-4">
-            <div className="rounded-xl border border-slate-200 bg-white p-4 shadow-sm">
+            <div className="rounded-xl border border-slate-100 bg-white p-4 ">
               <Input
                 id="search_query"
                 name="search_query"
@@ -222,7 +237,7 @@ export default function ProductsPage() {
             </div>
 
             {/* Product List */}
-            <div className="overflow-hidden rounded-xl border border-slate-200 bg-white shadow-sm">
+            <div className="overflow-hidden rounded-xl border border-slate-200 bg-white ">
               {filteredProducts.length === 0 ? (
                 <div className="py-12 text-center text-sm text-slate-500">
                   No products matched your criteria.
@@ -239,12 +254,15 @@ export default function ProductsPage() {
                           <span className="font-mono text-xs font-bold text-emerald-700 bg-emerald-50 px-2 py-0.5 rounded border border-emerald-200">
                             {product.product_code}
                           </span>
-                          <span className="text-sm font-semibold text-slate-900">
+                          <span className="text-sm font-semibold text-gray-700">
                             {product.name}
                           </span>
                         </div>
                         <p className="text-xs text-slate-500">
-                          Unit: <span className="font-medium text-slate-700">{product.stock_unit}</span>
+                          Unit:{" "}
+                          <span className="font-medium text-slate-700">
+                            {product.stock_unit}
+                          </span>
                           {product.description && ` • ${product.description}`}
                         </p>
                       </div>
