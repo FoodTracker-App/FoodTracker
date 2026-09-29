@@ -38,7 +38,7 @@ app.use("/api", (req, res, next) => {
   }
   next();
 });
-const loginLimiter = rateLimit({
+const createAuthLimiter = (action) => rateLimit({
   windowMs: 15 * 60 * 1000,
   limit: 10,
   standardHeaders: "draft-8",
@@ -48,12 +48,17 @@ const loginLimiter = rateLimit({
       httpError(
         429,
         "RATE_LIMITED",
-        "Too many login attempts. Try again later.",
+        `Too many ${action} attempts. Try again later.`,
       ),
     ),
 });
+const loginLimiter = createAuthLimiter("login");
+const signupLimiter = createAuthLimiter("sign-up");
 app.use("/api/auth/login", (req, res, next) =>
   req.method === "POST" ? loginLimiter(req, res, next) : next(),
+);
+app.use("/api/auth/signup", (req, res, next) =>
+  req.method === "POST" ? signupLimiter(req, res, next) : next(),
 );
 
 app.use(express.json());

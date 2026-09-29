@@ -1,6 +1,6 @@
 # Staff authentication
 
-Staff are the only account type. There is no registration, role system, password reset, or refresh token. Product endpoints now use this authentication; see [PRODUCTS.md](./PRODUCTS.md).
+Staff are the only account type and can register themselves through the public sign-up endpoint. New accounts are immediately active and signed in. There is no role system, approval, email verification, password reset, or refresh token. Product endpoints use this authentication; see [PRODUCTS.md](./PRODUCTS.md).
 
 ## Setup
 
@@ -28,7 +28,7 @@ The server checks database connectivity before listening. `/health` executes a r
 
 ## Session contract
 
-Login issues an HS256 JWT signed with `JWT_ACCESS_SECRET`, with the user UUID in `sub`, an issuance time, and a 30-minute expiration. Verification restricts the algorithm to HS256 and requires a valid UUID subject and expiration. The token contains no password or role data.
+Login and successful sign-up issue an HS256 JWT signed with `JWT_ACCESS_SECRET`, with the user UUID in `sub`, an issuance time, and a 30-minute expiration. Verification restricts the algorithm to HS256 and requires a valid UUID subject and expiration. The token contains no password or role data.
 
 Login returns the JWT as `accessToken` in JSON, with `tokenType: "Bearer"` and `expiresIn: 1800` (seconds). Existing identity fields (`id`, `fullName`, `email`) remain at the top level. Send `Authorization: Bearer <accessToken>` to authenticate Postman or other API clients.
 
@@ -44,11 +44,16 @@ Logout is protected by `requireAuth`: a valid Bearer token or cookie returns `20
 
 | Method and path | Request | Success |
 | --- | --- | --- |
+| `POST /api/auth/signup` | JSON `{ "firstName": "Alex", "lastName": "Morgan", "email": "alex@foodtracker.example", "password": "Example-Password!", "confirmPassword": "Example-Password!" }` | `201 { "id": "<uuid>", "fullName": "Alex Morgan", "email": "alex@foodtracker.example", "accessToken": "<jwt>", "tokenType": "Bearer", "expiresIn": 1800 }` plus cookie |
 | `POST /api/auth/login` | JSON `{ "email": "alex@foodtracker.example", "password": "Alex-Dev-Only-2026!" }` | `200 { "id": "<uuid>", "fullName": "Alex Morgan", "email": "alex@foodtracker.example", "accessToken": "<jwt>", "tokenType": "Bearer", "expiresIn": 1800 }` plus cookie |
 | `GET /api/auth/me` | Bearer token or auth cookie | `200 { "id": "<uuid>", "fullName": "Alex Morgan", "email": "alex@foodtracker.example", "isActive": true }` |
 | `POST /api/auth/logout` | No body required; Bearer token or auth cookie | `200 { "message": "Logged out." }` plus cookie removal |
 
 Login trims and lowercases email, validates its syntax and 254-character limit, and accepts a nonempty password of at most 72 UTF-8 bytes without trimming or conversion. Unknown body fields are rejected. Seed `.example` emails are accepted. Joi schemas live in validators and are executed in controllers; business logic and database operations live in services.
+
+Sign-up requires exactly `firstName`, `lastName` (surname), `email`, `password`, and `confirmPassword`. It uses the same email/password validation as login. Both names are trimmed and must be nonempty; their joined value, separated by one space, must not exceed 120 characters. Confirmation must match the password exactly, including whitespace. Invalid input returns `400 VALIDATION_ERROR` without echoing submitted values.
+
+The service generates a UUID and stores the joined name in Prisma's `fullName` (`full_name` in PostgreSQL), the normalized email, and a bcrypt cost-12 password hash. Password confirmation is never stored. Existing defaults supply active status and timestamps; no migration is required. Email uniqueness conflicts, including simultaneous registrations, return `409 EMAIL_ALREADY_EXISTS` with message `An account with this email already exists.` Existing users, including inactive accounts, are never overwritten or reactivated. Successful sign-up returns the same session fields and cookie as login, with status `201`; the token or cookie can immediately access `/me` and protected inventory routes.
 
 Credential checks use `bcrypt.compare`; unknown emails use a fixed dummy cost-12 hash. Unknown email, incorrect password, and inactive account all receive precisely:
 
@@ -58,9 +63,13 @@ Credential checks use `bcrypt.compare`; unknown emails use a fixed dummy cost-12
 
 This response has status `401`. Dummy hashing reduces the obvious missing-user timing difference; it is not a guarantee of identical end-to-end timings.
 
-All protected routes use `401 { "error": { "code": "UNAUTHORIZED", "message": "Authentication required." } }` for invalid sessions. Login is limited to 10 POST requests per IP per 15 minutes, including successful requests, using the process-local limiter. Exceeding the limit returns `429 RATE_LIMITED` with rate-limit headers. The limit resets on process restart and is not shared across server instances. Proxy trust is not enabled blindly; configure verified proxy topology before a reverse-proxy deployment so IP-based limiting works correctly.
+All protected routes use `401 { "error": { "code": "UNAUTHORIZED", "message": "Authentication required." } }` for invalid sessions. Login and sign-up each have a separate limit of 10 POST requests per IP per 15 minutes, including successful requests, using process-local limiters. Exceeding either limit returns `429 RATE_LIMITED` with rate-limit headers. Sign-up attempts do not consume the login allowance. Limits reset on process restart and are not shared across server instances. Proxy trust is not enabled blindly; configure verified proxy topology before a reverse-proxy deployment so IP-based limiting works correctly.
 
-Other centralized errors use the same envelope: `400 VALIDATION_ERROR`, `400 INVALID_JSON`, `413 PAYLOAD_TOO_LARGE`, `403 ORIGIN_FORBIDDEN`, `404 NOT_FOUND`, and `500 INTERNAL_ERROR`. Unexpected errors use a fixed public message. Passwords, raw database errors, and stack traces are not returned or logged by auth handlers. JWTs are returned only on successful login and are not logged by auth handlers. Prisma query/error logging is disabled to avoid leaking seed credential data.
+Other centralized errors use the same envelope: `400 VALIDATION_ERROR`, `400 INVALID_JSON`, `413 PAYLOAD_TOO_LARGE`, `403 ORIGIN_FORBIDDEN`, `404 NOT_FOUND`, and `500 INTERNAL_ERROR`. Unexpected errors use a fixed public message. Passwords, raw database errors, and stack traces are not returned or logged by auth handlers. JWTs are returned only on successful login or sign-up and are not logged by auth handlers. Prisma query/error logging is disabled to avoid leaking credential data.
+
+## Automated sign-up verification
+
+Run `npm test` from `backend`. The tests start the actual application middleware on an ephemeral local port and mock database connectivity and user persistence; no database records are written. They exercise Joi boundaries, password hashing, cookie/Bearer sessions, duplicate and concurrent registration, adapter error handling, login/logout, inactive accounts, origin policy, and independent sign-up rate limiting.
 
 ## Inventory routes
 
