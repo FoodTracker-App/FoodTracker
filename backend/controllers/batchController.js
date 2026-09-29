@@ -1,9 +1,10 @@
+import { getStoreToday } from "../config/store.js";
+import { validateBatchQuery } from "../utils/validateBatchQuery.js";
 import * as batchService from "../services/batchService.js";
 import {
   createBatchSchema,
   updateBatchSchema,
   batchIdSchema,
-  listBatchesSchema,
 } from "../validators/batchValidators.js";
 import { httpError } from "../utils/errors.js";
 
@@ -49,8 +50,9 @@ const validate = (schema, input) => {
 
 export const createBatch = async (req, res, next) => {
   try {
+    const today = getStoreToday();
     const input = validate(createBatchSchema, req.body);
-    res.status(201).json(await batchService.createBatch(input, req.user.id));
+    res.status(201).json(await batchService.createBatch(input, req.user.id, today));
   } catch (error) {
     next(error);
   }
@@ -58,8 +60,9 @@ export const createBatch = async (req, res, next) => {
 
 export const listBatches = async (req, res, next) => {
   try {
-    const query = validate(listBatchesSchema, req.query);
-    res.status(200).json(await batchService.listBatches(query));
+    const today = getStoreToday();
+    const query = validateBatchQuery(req.query);
+    res.status(200).json(await batchService.listBatches(query, today));
   } catch (error) {
     next(error);
   }
@@ -67,8 +70,9 @@ export const listBatches = async (req, res, next) => {
 
 export const getBatch = async (req, res, next) => {
   try {
+    const today = getStoreToday();
     const { id } = validate(batchIdSchema, req.params);
-    res.status(200).json(await batchService.getBatch(id));
+    res.status(200).json(await batchService.getBatch(id, today));
   } catch (error) {
     next(error);
   }
@@ -76,9 +80,10 @@ export const getBatch = async (req, res, next) => {
 
 export const updateBatch = async (req, res, next) => {
   try {
+    const today = getStoreToday();
     const { id } = validate(batchIdSchema, req.params);
     const input = validate(updateBatchSchema, req.body);
-    res.status(200).json(await batchService.updateBatch(id, input));
+    res.status(200).json(await batchService.updateBatch(id, input, today));
   } catch (error) {
     next(error);
   }

@@ -1,5 +1,7 @@
 # Batch Intake and Stock Listing (FET-08)
 
+FET-12 adds [stock adjustments and per-batch movement history](./STOCK_ADJUSTMENTS.md). Intake and PATCH behavior documented here is unchanged.
+
 All endpoints require authentication via the Bearer token or session cookie issued by `POST /api/auth/login`. In Postman, choose **Authorization → Bearer Token** and paste the returned `accessToken`; browser clients using cookies send `credentials: "include"`. See [AUTH.md](./AUTH.md). Responses use `Cache-Control: no-store` and the existing origin policy.
 
 ## Endpoints
@@ -7,11 +9,11 @@ All endpoints require authentication via the Bearer token or session cookie issu
 | Method and path | Accepted input | Success |
 | --- | --- | --- |
 | `POST /api/batches` | Required `productId`, `locationId`, `quantity`, `expiryDate`; optional `manufacturerLot`, `reason` | `201`, batch detail plus `initialMovement` |
-| `GET /api/batches` | Optional query `productId`, `locationId`, `page`, `pageSize` | `200`, `{ items, page, pageSize, total, totalPages }` |
+| `GET /api/batches` | Optional query `q`, `productId`, `locationId`, `status`, `page`, `pageSize` | `200`, `{ items, page, pageSize, total, totalPages }` |
 | `GET /api/batches/:id` | UUID path parameter | `200`, batch detail |
 | `PATCH /api/batches/:id` | UUID; body with `locationId` and/or `expiryDate` | `200`, updated batch detail |
 
-Batch objects contain `id`, `productId`, `locationId`, `createdById`, `manufacturerLot`, `quantity`, `expiryDate`, `receivedAt`, and `updatedAt`, plus `product: { productCode, name, stockUnit }` and `location: { name }`. Detail, create, and correction also include `createdBy: { id, fullName }`. User email, password hashes, and other user fields are never selected. Only creation includes `initialMovement`; list/detail/correction omit movement history.
+Batch objects contain `id`, `productId`, `locationId`, `createdById`, `manufacturerLot`, `quantity`, `expiryDate`, `receivedAt`, `updatedAt`, and computed `expiryStatus` and `daysRemaining`, plus `product: { productCode, name, stockUnit }` and `location: { name }`. Detail, create, and correction also include `createdBy: { id, fullName }`. User email, password hashes, and other user fields are never selected. Only creation includes `initialMovement`; list/detail/correction omit movement history.
 
 `expiryDate` is always a `YYYY-MM-DD` string. Timestamps are ISO-8601 strings; manufacturer lot may be `null`. Single batches are returned without an outer wrapper.
 
@@ -30,13 +32,13 @@ An interactive Prisma transaction checks product/location existence and inserts 
 
 ## Listing and corrections
 
-List filters use product/location UUIDs and combine with AND when both are present. Well-formed but nonexistent filter IDs return an empty result, not a reference-not-found error. Expired and zero-quantity batches are included. Results are ordered by expiry ascending, then ID ascending; each row includes product/location details without follow-up requests.
+List filters accept product/location UUIDs, product name/code search (`q`), and computed expiry `status`, combined with AND. See [EXPIRY.md](./EXPIRY.md) for band definitions, timezone configuration, validation, dashboard responses, and current examples. Well-formed but nonexistent filter IDs return an empty result, not a reference-not-found error. Expired and zero-quantity batches are included. Results are ordered by expiry ascending, then ID ascending; each row includes product/location details without follow-up requests.
 
 Pagination matches products: page defaults to 1, page size to 20, maximum page size is 100. Page and computed offset must not exceed 2,147,483,647. Invalid values, repeated parameters, unknown parameters, and excessive page sizes return `400`, not clamped values. An empty result is `{ "items": [], "page": 1, "pageSize": 20, "total": 0, "totalPages": 0 }`; out-of-range pages preserve actual totals and return empty items. Rows and count use a Prisma transaction; offset pagination does not freeze inventory across requests.
 
 PATCH validates the path UUID before body validation, then checks batch existence before a supplied replacement location. It updates only location/expiry and explicitly sets `updatedAt`, preserving quantity, product, creator, manufacturer lot, and received time. It writes no movement or audit row. Empty bodies fail.
 
-Supplying `quantity`, `quantityChange`, `type`, `reason`, `batchId`, `performedById`, `createdAt`, `stockMovements`, or `initialMovement` on PATCH rejects the entire request with `400 QUANTITY_NOT_EDITABLE`, even if another body field is also invalid. Other unsupported fields return `400 VALIDATION_ERROR`. Stock adjustment, movement history retrieval, and batch deletion are outside this issue.
+Supplying `quantity`, `quantityChange`, `type`, `reason`, `batchId`, `performedById`, `createdAt`, `stockMovements`, or `initialMovement` on PATCH rejects the entire request with `400 QUANTITY_NOT_EDITABLE`, even if another body field is also invalid. Other unsupported fields return `400 VALIDATION_ERROR`. Stock adjustment and movement history retrieval are provided separately by [FET-12](./STOCK_ADJUSTMENTS.md). Batch deletion remains outside scope.
 
 ## Errors
 
@@ -60,7 +62,9 @@ Errors use `{ "error": { "code": "...", "message": "..." } }`.
 
 Missing batches on GET/PATCH return `404 BATCH_NOT_FOUND`; update `P2025` maps to the same error. Prisma `P2003` on intake/correction maps to `409 REFERENCE_CONFLICT`. Unexpected database errors retain the shared generic response. Authentication runs before controllers; global origin and JSON parsing middleware still run before authentication.
 
-## Manual examples (not executed)
+## FET-08 manual examples (not executed)
+
+These original examples predate FET-15. Every batch object now also includes `expiryStatus` and `daysRemaining`, calculated for the request's store date; see [EXPIRY.md](./EXPIRY.md) for dated examples.
 
 Use existing product/location IDs and an active staff token. All IDs and timestamps below are illustrative. Set Postman's `baseUrl` to the actual backend URL, such as `http://localhost:5000`, and use JSON bodies with `Content-Type: application/json`.
 
@@ -189,4 +193,4 @@ A well-formed absent batch ID returns `404`:
 - Location-only, expiry-only, and combined corrections preserve quantity/product/creator/lot/received time, advance `updatedAt`, and preserve movement count. Empty/unknown bodies fail. Every prohibited movement field returns `QUANTITY_NOT_EDITABLE`.
 - Check malformed IDs versus absent UUIDs, absent product/location on intake, missing batch before missing replacement location, `P2025` update races, and foreign-key race translation to `REFERENCE_CONFLICT` with no partial intake.
 
-No seed scripts, test files, schema changes, or migrations are included. Implementation checks use JavaScript syntax checks, in-memory validation, and diff review; live endpoint/database verification is left to manual testing.
+FET-08 added no seed scripts, test files, schema changes, or migrations. FET-15 adds one pure expiry unit test file; no schema changes or migrations. Implementation checks use JavaScript syntax checks, in-memory validation, and diff review; live endpoint/database verification is left to manual testing.

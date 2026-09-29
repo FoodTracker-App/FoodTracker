@@ -1,20 +1,8 @@
 import { randomUUID } from "node:crypto";
 import { prisma } from "../config/db.js";
 import { httpError } from "../utils/errors.js";
+import { batchSelect, batchOrderBy, serializeBatch, buildBatchWhere } from "../utils/batchQuery.js";
 
-const batchSelect = {
-  id: true,
-  productId: true,
-  locationId: true,
-  createdById: true,
-  manufacturerLot: true,
-  quantity: true,
-  expiryDate: true,
-  receivedAt: true,
-  updatedAt: true,
-  product: { select: { productCode: true, name: true, stockUnit: true } },
-  location: { select: { name: true } },
-};
 const batchDetailSelect = {
   ...batchSelect,
   createdBy: { select: { id: true, fullName: true } },
@@ -36,10 +24,6 @@ const referenceConflict = () => httpError(
   "A referenced record is no longer available. Reload and try again.",
 );
 const toExpiryDate = (value) => new Date(`${value}T00:00:00.000Z`);
-const serializeBatch = (batch) => ({
-  ...batch,
-  expiryDate: batch.expiryDate.toISOString().slice(0, 10),
-});
 
 const requireLocation = async (tx, id) => {
   const location = await tx.storageLocation.findUnique({
@@ -50,7 +34,7 @@ const requireLocation = async (tx, id) => {
   }
 };
 
-export const createBatch = async (input, userId) => {
+export const createBatch = async (input, userId, today) => {
   try {
     return await prisma.$transaction(async (tx) => {
       const product = await tx.product.findUnique({
@@ -81,7 +65,7 @@ export const createBatch = async (input, userId) => {
         },
         select: movementSelect,
       });
-      return { ...serializeBatch(batch), initialMovement };
+      return { ...serializeBatch(batch, today), initialMovement };
     });
   } catch (error) {
     if (error.code === "P2003") throw referenceConflict();
@@ -89,22 +73,21 @@ export const createBatch = async (input, userId) => {
   }
 };
 
-export const listBatches = async ({ productId, locationId, page, pageSize }) => {
-  const where = {};
-  if (productId !== undefined) where.productId = productId;
-  if (locationId !== undefined) where.locationId = locationId;
+export const listBatches = async (query, today) => {
+  const { page, pageSize } = query;
+  const where = buildBatchWhere(query, today);
   const [items, total] = await prisma.$transaction([
     prisma.batch.findMany({
       where,
       select: batchSelect,
-      orderBy: [{ expiryDate: "asc" }, { id: "asc" }],
+      orderBy: batchOrderBy,
       skip: (page - 1) * pageSize,
       take: pageSize,
     }),
     prisma.batch.count({ where }),
   ]);
   return {
-    items: items.map(serializeBatch),
+    items: items.map((batch) => serializeBatch(batch, today)),
     page,
     pageSize,
     total,
@@ -112,15 +95,15 @@ export const listBatches = async ({ productId, locationId, page, pageSize }) => 
   };
 };
 
-export const getBatch = async (id) => {
+export const getBatch = async (id, today) => {
   const batch = await prisma.batch.findUnique({
     where: { id }, select: batchDetailSelect,
   });
   if (!batch) throw notFound();
-  return serializeBatch(batch);
+  return serializeBatch(batch, today);
 };
 
-export const updateBatch = async (id, input) => {
+export const updateBatch = async (id, input, today) => {
   try {
     return await prisma.$transaction(async (tx) => {
       const existing = await tx.batch.findUnique({
@@ -138,7 +121,7 @@ export const updateBatch = async (id, input) => {
       const batch = await tx.batch.update({
         where: { id }, data, select: batchDetailSelect,
       });
-      return serializeBatch(batch);
+      return serializeBatch(batch, today);
     });
   } catch (error) {
     if (error.code === "P2025") throw notFound();
