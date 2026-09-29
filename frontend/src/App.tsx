@@ -8,17 +8,17 @@ import AddProductPage from './pages/Product'
 import StockAdjustmentPage from './pages/StockAdjustment'
 import NotFoundPage from './pages/NotFoundPage'
 import LocationsPage from './pages/Location'
+import DashboardPage from './pages/Dashboard'
 
 
 function App() {
 
   return (
-    <>
-    <Route path="/auth" element={<Auth />} />
-        <Routes>
+    <Routes>
+      <Route path="/auth" element={<Auth />} />
         {/* Routes WITH Navbar */}
         <Route element={<MainLayout />}>
-          <Route path="/" element={<>Hi</>} />
+          <Route path="/" element={<DashboardPage />} />
           <Route path ='/batches' element = {<BatchIntakePage/>}></Route>
           <Route path ='/add' element = {<AddProductPage/>}></Route>
           <Route path= '/adjustment' element = {<StockAdjustmentPage/>}></Route>
@@ -27,10 +27,7 @@ function App() {
         </Route>
 
         {/* Routes WITHOUT Navbar */}
-        
-      </Routes>
-   
-    </>
+    </Routes>
   )
 }
 

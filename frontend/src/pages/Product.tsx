@@ -1,9 +1,10 @@
 // src/pages/ProductsPage.tsx
 
-import { useState, useMemo } from "react";
+import { useState, useMemo, useEffect } from "react";
 import type { Product } from "../types/inventory";
 import Input from "../components/UI/Input";
 import Button from "../components/UI/Button";
+import { ApiError, productApi } from "../api/client";
 
 export type AddProductFormData = Omit<Product, "id">;
 type FormErrors = Partial<Record<keyof AddProductFormData, string>>;
@@ -12,31 +13,9 @@ type TabType = "search" | "add";
 
 export default function ProductsPage() {
   const [activeTab, setActiveTab] = useState<TabType>("search");
-
-  // Sample catalog state
-  const [products, setProducts] = useState<Product[]>([
-    {
-      id: "prod-1",
-      product_code: "PRD-PARA-500",
-      name: "Paracetamol 500mg Tablets",
-      stock_unit: "Box",
-      description: "Analgesic and antipyretic formulation.",
-    },
-    {
-      id: "prod-2",
-      product_code: "PRD-AMOX-250",
-      name: "Amoxicillin 250mg Suspension",
-      stock_unit: "Bottle",
-      description: "Antibacterial medication for oral suspension.",
-    },
-    {
-      id: "prod-3",
-      product_code: "PRD-IBU-400",
-      name: "Ibuprofen 400mg Softgels",
-      stock_unit: "Blister Pack",
-      description: "Nonsteroidal anti-inflammatory drug (NSAID).",
-    },
-  ]);
+  const [products, setProducts] = useState<Product[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
+  const [loadError, setLoadError] = useState<string | null>(null);
 
   // Search filter query
   const [searchQuery, setSearchQuery] = useState("");
@@ -58,8 +37,16 @@ export default function ProductsPage() {
   // Edit / Rename Modal State
   const [editingProduct, setEditingProduct] = useState<Product | null>(null);
   const [renameValue, setRenameValue] = useState("");
-  const [renameUnit, setRenameUnit] = useState("");
   const [renameError, setRenameError] = useState<string | null>(null);
+
+  useEffect(() => {
+    productApi.list()
+      .then(setProducts)
+      .catch((error: unknown) => {
+        setLoadError(error instanceof ApiError ? error.message : "Could not load products.");
+      })
+      .finally(() => setIsLoading(false));
+  }, []);
 
   // Filtered Products for Search
   const filteredProducts = useMemo(() => {
@@ -107,13 +94,12 @@ export default function ProductsPage() {
     setIsSubmitting(true);
 
     try {
-      const newProduct: Product = {
-        id: `prod-${Date.now()}`,
+      const newProduct = await productApi.create({
         product_code: formData.product_code.trim().toUpperCase(),
         name: formData.name.trim(),
         stock_unit: formData.stock_unit.trim(),
         description: formData.description?.trim() || undefined,
-      };
+      });
 
       setProducts((prev) => [newProduct, ...prev]);
       setFormData({
@@ -127,9 +113,9 @@ export default function ProductsPage() {
         type: "success",
       });
       setActiveTab("search"); // Switch tab to view catalog
-    } catch {
+    } catch (error) {
       setStatusMessage({
-        text: "Failed to add product. Please try again.",
+        text: error instanceof ApiError ? error.message : "Failed to add product. Please try again.",
         type: "error",
       });
     } finally {
@@ -141,31 +127,30 @@ export default function ProductsPage() {
   function openEditModal(product: Product) {
     setEditingProduct(product);
     setRenameValue(product.name);
-    setRenameUnit(product.stock_unit);
     setRenameError(null);
   }
 
   // Save Renamed Product
-  function handleSaveRename(e: React.FormEvent) {
+  async function handleSaveRename(e: React.FormEvent) {
     e.preventDefault();
     if (!renameValue.trim()) {
       setRenameError("Product name cannot be empty.");
       return;
     }
-    if (!renameUnit.trim()) {
-      setRenameError("Stock unit cannot be empty.");
-      return;
-    }
-
     if (editingProduct) {
-      setProducts((prev) =>
-        prev.map((p) =>
-          p.id === editingProduct.id
-            ? { ...p, name: renameValue.trim(), stock_unit: renameUnit.trim() }
-            : p,
-        ),
-      );
-      setEditingProduct(null);
+      try {
+        const updatedProduct = await productApi.update(editingProduct.id, {
+          name: renameValue.trim(),
+        });
+        setProducts((prev) =>
+          prev.map((product) =>
+            product.id === updatedProduct.id ? updatedProduct : product,
+          ),
+        );
+        setEditingProduct(null);
+      } catch (error) {
+        setRenameError(error instanceof ApiError ? error.message : "Could not update product.");
+      }
     }
   }
 
@@ -192,6 +177,11 @@ export default function ProductsPage() {
             }`}
           >
             {statusMessage.text}
+          </div>
+        )}
+        {loadError && (
+          <div role="alert" className="mb-6 rounded-lg border border-red-200 bg-red-50 p-4 text-sm text-red-800">
+            {loadError}
           </div>
         )}
 
@@ -236,13 +226,18 @@ export default function ProductsPage() {
               />
             </div>
 
-            {/* Product List */}
-            <div className="overflow-hidden rounded-xl border border-slate-200 bg-white ">
-              {filteredProducts.length === 0 ? (
-                <div className="py-12 text-center text-sm text-slate-500">
-                  No products matched your criteria.
-                </div>
-              ) : (
+            {isLoading && (
+              <p className="rounded-xl border border-slate-200 bg-white p-6 text-sm text-slate-500">
+                Loading products...
+              </p>
+            )}
+            {!isLoading && (
+              <div className="overflow-hidden rounded-xl border border-slate-200 bg-white ">
+                {filteredProducts.length === 0 ? (
+                  <div className="py-12 text-center text-sm text-slate-500">
+                    No products matched your criteria.
+                  </div>
+                ) : (
                 <ul className="divide-y divide-slate-100">
                   {filteredProducts.map((product) => (
                     <li
@@ -280,8 +275,9 @@ export default function ProductsPage() {
                     </li>
                   ))}
                 </ul>
-              )}
-            </div>
+                )}
+              </div>
+            )}
           </div>
         )}
 
@@ -376,13 +372,7 @@ export default function ProductsPage() {
                 onChange={(e) => setRenameValue(e.target.value)}
               />
 
-              <Input
-                id="rename_unit"
-                name="rename_unit"
-                label="Stock Unit"
-                value={renameUnit}
-                onChange={(e) => setRenameUnit(e.target.value)}
-              />
+              <p className="text-sm text-slate-600">Stock unit: {editingProduct.stock_unit}</p>
 
               {renameError && (
                 <p className="text-xs text-red-600">{renameError}</p>

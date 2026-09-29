@@ -9,7 +9,7 @@ const variants = {
 
 type ButtonProps = {
   variant? : keyof typeof variants,
-  className? : String,
+  className? : string,
   type? : 'button' | 'submit' | 'reset',
   children? : React.ReactNode
 } & React.ButtonHTMLAttributes<HTMLButtonElement>

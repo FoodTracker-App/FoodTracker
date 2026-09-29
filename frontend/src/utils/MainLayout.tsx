@@ -1,7 +1,7 @@
 // src/layouts/MainLayout.jsx
 import { Outlet, Navigate, useLocation } from 'react-router-dom'
 import Navbar from '../components/Navbar'
-import { useAuth } from '../Auth/AuthContext'
+import { useAuth } from '../Auth/context'
 
 export default function MainLayout() {
   const { user, isAuthenticated, isLoading } = useAuth()

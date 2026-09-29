@@ -6,7 +6,7 @@ All endpoints require authentication via the Bearer token or session cookie issu
 
 | Method and path | Accepted input | Success |
 | --- | --- | --- |
-| `POST /api/batches` | Required `productId`, `locationId`, `quantity`, `expiryDate`; optional `manufacturerLot`, `reason` | `201`, batch detail plus `initialMovement` |
+| `POST /api/batches` | Required `productId`, `locationId`, `quantity`, `expiryDate`; optional `manufacturerLot`, `reason`, `receivedAt` | `201`, batch detail plus `initialMovement` |
 | `GET /api/batches` | Optional query `productId`, `locationId`, `page`, `pageSize` | `200`, `{ items, page, pageSize, total, totalPages }` |
 | `GET /api/batches/:id` | UUID path parameter | `200`, batch detail |
 | `PATCH /api/batches/:id` | UUID; body with `locationId` and/or `expiryDate` | `200`, updated batch detail |
@@ -22,6 +22,7 @@ Batch objects contain `id`, `productId`, `locationId`, `createdById`, `manufactu
 - Expiry must be an exact `YYYY-MM-DD` string describing a real calendar date in years 0001–9999. Past dates are allowed on creation and correction. Datetimes, timezone offsets, surrounding whitespace, year zero, and rollover dates such as `2026-02-30` are rejected. The service constructs UTC midnight for the PostgreSQL DATE column; clients should send the intended calendar date directly, not convert local midnight to an ISO timestamp.
 - Optional manufacturer lot is trimmed and limited to 100 characters after trimming. Omission, null, and blank strings become `null`.
 - Optional reason is trimmed and must contain 1–500 characters if supplied. Null/blank reasons are rejected. Omission defaults server-side to `Initial stock receipt`.
+- Optional `receivedAt` must be an ISO-8601 timestamp. Omission uses the database's current-time default.
 - POST/PATCH require JSON objects and reject unknown fields. IDs, ownership, and timestamps cannot be supplied by the client.
 
 Every successful POST creates a new batch with a generated UUID. Matching product/location/expiry combinations, including repeated manufacturer lots, are never merged or upserted. Retrying a successful POST creates another receipt; there is no idempotency key in this issue.

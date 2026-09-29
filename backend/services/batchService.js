@@ -67,6 +67,9 @@ export const createBatch = async (input, userId) => {
           manufacturerLot: input.manufacturerLot?.trim() || null,
           quantity: input.quantity,
           expiryDate: toExpiryDate(input.expiryDate),
+          ...(input.receivedAt
+            ? { receivedAt: new Date(input.receivedAt) }
+            : {}),
         },
         select: batchDetailSelect,
       });

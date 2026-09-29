@@ -1,6 +1,9 @@
 import React, { useState } from "react";
+import { Navigate, useLocation, useNavigate } from "react-router-dom";
 import Button from "../components/UI/Button";
 import Input from "../components/UI/Input";
+import { ApiError, authApi } from "../api/client";
+import { useAuth } from "../Auth/context";
 
 type AuthTab = "login" | "signUp";
 
@@ -14,7 +17,12 @@ interface FormData {
 }
 
 const Auth = () => {
-  const [tab, setTab] = useState<AuthTab>("signUp");
+  const [tab, setTab] = useState<AuthTab>("login");
+  const [errorMessage, setErrorMessage] = useState<string | null>(null);
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const { login, isAuthenticated, isLoading } = useAuth();
+  const navigate = useNavigate();
+  const location = useLocation();
   const [formData, setFormData] = useState<FormData>({
     firstName: "",
     lastName: "",
@@ -37,22 +45,65 @@ const Auth = () => {
     }));
   };
 
-  const handleSubmit = (e: React.FormEvent<HTMLFormElement>) => {
+  const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
-
-    if (formData.website) return; // Honeypot check
+    setErrorMessage(null);
+    if (formData.website) return;
 
     if (isSignUp && formData.password !== formData.confirmPassword) {
-      alert("Passwords do not match!");
+      setErrorMessage("Passwords do not match.");
       return;
     }
 
-    console.log("Submitting form:", { tab, formData });
+    setIsSubmitting(true);
+    try {
+      const session = isSignUp
+        ? await authApi.signup({
+            firstName: formData.firstName,
+            lastName: formData.lastName,
+            email: formData.email,
+            password: formData.password,
+            confirmPassword: formData.confirmPassword,
+          })
+        : await authApi.login(formData.email, formData.password);
+      login(session.accessToken, {
+        id: session.id,
+        fullName: session.fullName,
+        email: session.email,
+      });
+      const destination = location.state?.from;
+      navigate(
+        destination
+          ? `${destination.pathname}${destination.search || ""}${destination.hash || ""}`
+          : "/",
+        { replace: true },
+      );
+    } catch (error) {
+      setErrorMessage(
+        error instanceof ApiError
+          ? error.message
+          : "Unable to connect to the server. Check your connection and try again.",
+      );
+    } finally {
+      setIsSubmitting(false);
+    }
   };
 
   const toggleTab = () => {
     setTab((prev) => (prev === "login" ? "signUp" : "login"));
   };
+
+  if (isLoading) {
+    return (
+      <div className="flex min-h-screen items-center justify-center text-slate-600">
+        Verifying session...
+      </div>
+    );
+  }
+
+  if (isAuthenticated) {
+    return <Navigate to="/" replace />;
+  }
 
   return (
     <div className="flex min-h-screen w-screen flex-col justify-center">
@@ -65,9 +116,12 @@ const Auth = () => {
               : "md:order-2 md:translate-x-0 md:rounded-l-4xl"
           }`}
         >
-          <div className="text-xl font-medium">
-            <span className="text-3xl font-bold text-white">X</span>pire
-          </div>
+          <div className="w-24 h-32">
+<img
+              src="xpire-green.png"
+              alt="Xpire Logo"
+              className="h-full w-full object-contain"
+            />          </div>
 
           <div
             key={tab}
@@ -105,9 +159,13 @@ const Auth = () => {
             key={tab}
             className="w-full max-w-md space-y-6 transition-all duration-500 ease-in-out animate-fadeIn">
             <div className="text-center">
-              <h1 className="text-3xl font-bold text-green-800 md:text-4xl">
-                {isSignUp ? "Create An Account" : "Sign In to Xpire"}
-              </h1>
+              <p className=" font-bold text-green-800 md:text-xl">
+                {isSignUp ? "Create An Account" : <div className="h- w-24 flex gap-2.5">Sign In to <img
+              src="xpire-green.png"
+              alt="Xpire Logo"
+              className="h-full w-full object-contain"
+            /></div>}
+              </p>
               <p className="mt-2 text-sm text-gray-500">
                 {isSignUp
                   ? "Fill in your information below"
@@ -182,8 +240,18 @@ const Auth = () => {
                 className="hidden"
               />
 
-              <Button type="submit" className="w-full">
-                {isSignUp ? "Create Account" : "Sign In"}
+              {errorMessage && (
+                <p role="alert" className="text-sm text-red-700">
+                  {errorMessage}
+                </p>
+              )}
+
+              <Button type="submit" className="w-full" disabled={isSubmitting}>
+                {isSubmitting
+                  ? "Please wait..."
+                  : isSignUp
+                    ? "Create Account"
+                    : "Sign In"}
               </Button>
             </form>
           </div>

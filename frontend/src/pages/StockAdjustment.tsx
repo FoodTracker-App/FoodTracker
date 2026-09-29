@@ -1,11 +1,12 @@
 // src/pages/StockAdjustmentPage.tsx
 
 import { useState, useEffect, useMemo } from "react";
-import { Link, useNavigate } from "react-router-dom";
+import { useNavigate } from "react-router-dom";
 
 import type { Batch, StockMovementType } from "../types/inventory";
 import Input from "../components/UI/Input";
 import Button from "../components/UI/Button";
+import { ApiError, batchApi } from "../api/client";
 
 export type StockAdjustmentFormData = {
   batch_id: string;
@@ -69,57 +70,12 @@ export default function StockAdjustmentPage() {
     async function loadBatches() {
       try {
         setIsLoadingBatches(true);
-        // Replace with your real API fetch, e.g., getBatches()
-        const mockBatches: Batch[] = [
-          {
-            id: "batch-101",
-            product_id: "prod-1",
-            location_id: "loc-1",
-            created_by_id: "user-1",
-            manufacturer_lot: "LOT-2026-A",
-            quantity: 48,
-            expiry_date: "2026-12-31",
-            received_at: "2026-01-15T09:00:00Z",
-            updated_at: "2026-01-15T09:00:00Z",
-            product: {
-              id: "prod-1",
-              product_code: "PRD-001",
-              name: "Paracetamol 500mg",
-              stock_unit: "Box",
-            },
-            location: {
-              id: "loc-1",
-              name: "Main Warehouse - Rack A",
-            },
-          },
-          {
-            id: "batch-102",
-            product_id: "prod-2",
-            location_id: "loc-2",
-            created_by_id: "user-1",
-            manufacturer_lot: "LOT-2026-B",
-            quantity: 12,
-            expiry_date: "2026-10-15",
-            received_at: "2026-02-10T10:30:00Z",
-            updated_at: "2026-02-10T10:30:00Z",
-            product: {
-              id: "prod-2",
-              product_code: "PRD-002",
-              name: "Amoxicillin 250mg",
-              stock_unit: "Vial",
-            },
-            location: {
-              id: "loc-2",
-              name: "Cold Storage Room",
-            },
-          },
-        ];
-
-        setBatches(mockBatches);
-      } catch (err) {
-        console.error(err);
+        setBatches(await batchApi.list());
+      } catch (error) {
         setLoadError(
-          "Could not retrieve active inventory batches. Please refresh.",
+          error instanceof ApiError
+            ? error.message
+            : "Could not retrieve inventory batches. Please refresh.",
         );
       } finally {
         setIsLoadingBatches(false);
@@ -218,22 +174,18 @@ export default function StockAdjustmentPage() {
     setIsSubmitting(true);
 
     try {
-      // Payload ready for your stock movement API:
-      const payload = {
-        batch_id: formData.batch_id,
+      await batchApi.adjustStock({
+        batchId: formData.batch_id,
         type: formData.type,
-        quantity_change: Number(formData.quantity_change),
+        quantityChange: Number(formData.quantity_change),
         reason: formData.reason.trim(),
-      };
-
-      console.log("Submitting stock adjustment:", payload);
-
-      // Navigate to batch details or movement history
-      navigate("/inventory/movements");
-    } catch (err) {
-      console.error(err);
+      });
+      navigate("/", { state: { notice: "Stock adjustment recorded successfully." } });
+    } catch (error) {
       setServerError(
-        "Failed to record the stock adjustment. Please try again.",
+        error instanceof ApiError
+          ? error.message
+          : "Failed to record the stock adjustment. Please try again.",
       );
     } finally {
       setIsSubmitting(false);

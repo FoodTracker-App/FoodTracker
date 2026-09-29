@@ -24,6 +24,7 @@ export const createBatchSchema = Joi.object({
   locationId: uuid.required(),
   quantity: Joi.number().integer().positive().max(2147483647).strict().required(),
   expiryDate: expiryDate.required(),
+  receivedAt: Joi.string().isoDate(),
   manufacturerLot: Joi.string().trim().max(100).allow("", null),
   reason: Joi.string().trim().min(1).max(500),
 }).unknown(false).required();

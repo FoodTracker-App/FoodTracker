@@ -1,10 +1,11 @@
 // src/pages/LocationsPage.tsx
 
-import { useState, useMemo } from "react";
-import { MapPin, Plus, Search, Edit2 } from "lucide-react";
+import { useState, useMemo, useEffect } from "react";
+import { MapPin, Plus, Edit2 } from "lucide-react";
 import type { StorageLocation } from "../types/inventory";
 import Input from "../components/UI/Input";
 import Button from "../components/UI/Button";
+import { ApiError, locationApi } from "../api/client";
 
 export type AddLocationFormData = Omit<StorageLocation, "id">;
 type FormErrors = Partial<Record<keyof AddLocationFormData, string>>;
@@ -14,24 +15,9 @@ type TabType = "manage" | "add";
 export default function LocationsPage() {
   const [activeTab, setActiveTab] = useState<TabType>("manage");
 
-  // Sample state for locations
-  const [locations, setLocations] = useState<StorageLocation[]>([
-    {
-      id: "loc-1",
-      name: "Main Warehouse - Rack A",
-      description: "Primary staging area for non-refrigerated pharmaceuticals.",
-    },
-    {
-      id: "loc-2",
-      name: "Cold Storage Room B",
-      description: "Temperature-controlled chamber maintained at 2°C - 8°C.",
-    },
-    {
-      id: "loc-3",
-      name: "Dispensing Floor Shelf 3",
-      description: "Fast-moving front stock for outpatient prescription fills.",
-    },
-  ]);
+  const [locations, setLocations] = useState<StorageLocation[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
+  const [loadError, setLoadError] = useState<string | null>(null);
 
   // Search filter query
   const [searchQuery, setSearchQuery] = useState("");
@@ -53,6 +39,15 @@ export default function LocationsPage() {
   const [editName, setEditName] = useState("");
   const [editDescription, setEditDescription] = useState("");
   const [editError, setEditError] = useState<string | null>(null);
+
+  useEffect(() => {
+    locationApi.list()
+      .then(setLocations)
+      .catch((error: unknown) => {
+        setLoadError(error instanceof ApiError ? error.message : "Could not load storage locations.");
+      })
+      .finally(() => setIsLoading(false));
+  }, []);
 
   // Filtered Locations
   const filteredLocations = useMemo(() => {
@@ -98,11 +93,10 @@ export default function LocationsPage() {
     setIsSubmitting(true);
 
     try {
-      const newLocation: StorageLocation = {
-        id: `loc-${Date.now()}`,
+      const newLocation = await locationApi.create({
         name: formData.name.trim(),
-        description: formData.description?.trim() || undefined,
-      };
+        description: formData.description?.trim() || "",
+      });
 
       setLocations((prev) => [newLocation, ...prev]);
       setFormData({ name: "", description: "" });
@@ -111,9 +105,9 @@ export default function LocationsPage() {
         type: "success",
       });
       setActiveTab("manage");
-    } catch {
+    } catch (error) {
       setStatusMessage({
-        text: "Failed to create location. Please try again.",
+        text: error instanceof ApiError ? error.message : "Failed to create location. Please try again.",
         type: "error",
       });
     } finally {
@@ -130,7 +124,7 @@ export default function LocationsPage() {
   }
 
   // Save Edit
-  function handleSaveEdit(e: React.FormEvent) {
+  async function handleSaveEdit(e: React.FormEvent) {
     e.preventDefault();
     if (!editName.trim()) {
       setEditError("Location name cannot be empty.");
@@ -138,18 +132,20 @@ export default function LocationsPage() {
     }
 
     if (editingLocation) {
-      setLocations((prev) =>
-        prev.map((loc) =>
-          loc.id === editingLocation.id
-            ? {
-                ...loc,
-                name: editName.trim(),
-                description: editDescription.trim() || undefined,
-              }
-            : loc
-        )
-      );
-      setEditingLocation(null);
+      try {
+        const updatedLocation = await locationApi.update(editingLocation.id, {
+          name: editName.trim(),
+          description: editDescription.trim(),
+        });
+        setLocations((prev) =>
+          prev.map((location) =>
+            location.id === updatedLocation.id ? updatedLocation : location,
+          ),
+        );
+        setEditingLocation(null);
+      } catch (error) {
+        setEditError(error instanceof ApiError ? error.message : "Could not update location.");
+      }
     }
   }
 
@@ -178,6 +174,11 @@ export default function LocationsPage() {
             }`}
           >
             {statusMessage.text}
+          </div>
+        )}
+        {loadError && (
+          <div role="alert" className="mb-6 rounded-lg border border-red-200 bg-red-50 p-4 text-sm text-red-800">
+            {loadError}
           </div>
         )}
 
@@ -214,6 +215,7 @@ export default function LocationsPage() {
         {/* TAB 1: Search & Manage */}
         {activeTab === "manage" && (
           <div className="space-y-4">
+            {isLoading && <p className="text-sm text-slate-500">Loading locations...</p>}
             <div className="relative rounded-xl border border-slate-200 bg-white p-3 shadow-xs">
               <Input
                 id="search_locations"

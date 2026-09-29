@@ -1,11 +1,12 @@
 // pages/BatchIntakePage.tsx
 
 import { useState, useEffect } from "react";
-import { Link, useNavigate } from "react-router-dom";
+import { useNavigate } from "react-router-dom";
 
 import type { Product, StorageLocation } from "../types/inventory";
 import Input from "../components/UI/Input";
 import Button from "../components/UI/Button";
+import { ApiError, batchApi, locationApi, productApi } from "../api/client";
 
 export type BatchIntakeValues = {
   product_id: string;
@@ -45,19 +46,18 @@ export default function BatchIntakePage() {
     async function loadOptions() {
       try {
         setIsLoadingData(true);
-        // Replace with actual API calls if needed:
-        setProducts([
-          { id: "1", product_code: "PRD-001", name: "Paracetamol 500mg" },
-          { id: "2", product_code: "PRD-002", name: "Amoxicillin 250mg" },
-        ] as Product[]);
-
-        setLocations([
-          { id: "loc-1", name: "Main Warehouse - Rack A" },
-          { id: "loc-2", name: "Cold Storage Room" },
-        ] as StorageLocation[]);
-      } catch (err) {
-        console.error(err);
-        setLoadError("Failed to load products or locations. Please refresh.");
+        const [availableProducts, availableLocations] = await Promise.all([
+          productApi.list(),
+          locationApi.list(),
+        ]);
+        setProducts(availableProducts);
+        setLocations(availableLocations);
+      } catch (error) {
+        setLoadError(
+          error instanceof ApiError
+            ? error.message
+            : "Failed to load products or locations. Please refresh.",
+        );
       } finally {
         setIsLoadingData(false);
       }
@@ -130,11 +130,19 @@ export default function BatchIntakePage() {
     setIsSubmitting(true);
 
     try {
-      console.log("Submitting batch intake values:", formData);
-      navigate("/inventory/batches");
-    } catch (err) {
-      console.error(err);
-      alert("Failed to submit the batch.");
+      await batchApi.create({
+        productId: formData.product_id,
+        locationId: formData.location_id,
+        manufacturerLot: formData.manufacturer_lot.trim() || undefined,
+        quantity: Number(formData.quantity),
+        expiryDate: formData.expiry_date,
+        receivedAt: new Date(formData.received_at).toISOString(),
+      });
+      navigate("/", { state: { notice: "Batch received successfully." } });
+    } catch (error) {
+      setLoadError(
+        error instanceof ApiError ? error.message : "Failed to submit the batch.",
+      );
     } finally {
       setIsSubmitting(false);
     }
@@ -278,7 +286,7 @@ export default function BatchIntakePage() {
                 <Button
                   type="button"
                   variant="secondary"
-                  // onClick={() => navigate("/inventory/batches")}
+                  onClick={() => navigate("/")}
                   disabled={isSubmitting}
                 >
                   Cancel
