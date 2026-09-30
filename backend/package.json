@@ -28,6 +28,6 @@
     "pg": "^8.23.0"
   },
   "devDependencies": {
-    "prisma": "7.10.0"
+    "prisma": "^8.0.0-rc.19"
   }
 }
