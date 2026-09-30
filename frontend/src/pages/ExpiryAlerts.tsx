@@ -11,7 +11,6 @@ import {
 } from "lucide-react";
 import { Link } from "react-router-dom";
 import {
-  buildDemoBatches,
   dateKey,
   daysUntil,
   expiryCopy,
@@ -19,6 +18,7 @@ import {
   getExpiryBucket,
 } from "../utils/demoInventory";
 import type { ExpiryBucket } from "../utils/demoInventory";
+import { useDemoBatches } from "../hooks/useDemoBatches";
 
 type StatusFilter = "all" | ExpiryBucket;
 
@@ -85,7 +85,7 @@ const statusCards: Array<{
 
 function ExpiryAlerts() {
   const today = dateKey(new Date());
-  const batches = useMemo(() => buildDemoBatches(today), [today]);
+  const batches = useDemoBatches();
   const [search, setSearch] = useState("");
   const [locationFilter, setLocationFilter] = useState("all");
   const [statusFilter, setStatusFilter] = useState<StatusFilter>("all");

@@ -10,7 +10,6 @@ import {
 } from "lucide-react";
 import { Link } from "react-router-dom";
 import {
-  buildDemoBatches,
   dateKey,
   daysUntil,
   expiryCopy,
@@ -18,6 +17,7 @@ import {
   getExpiryBucket,
 } from "../utils/demoInventory";
 import type { ExpiryBucket } from "../utils/demoInventory";
+import { useDemoBatches } from "../hooks/useDemoBatches";
 
 const bucketDetails: Array<{
   key: ExpiryBucket;
@@ -80,7 +80,7 @@ const bucketStyles: Record<ExpiryBucket, string> = {
 
 function Dashboard() {
   const today = dateKey(new Date());
-  const batches = buildDemoBatches(today);
+  const batches = useDemoBatches();
   const bucketCounts = bucketDetails.map((bucket) => ({
     ...bucket,
     count: batches.filter(

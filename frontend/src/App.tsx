@@ -2,7 +2,7 @@ import "./App.css";
 import Auth from "./pages/Auth";
 import MainLayout from "./utils/MainLayout";
 import { Route, Routes } from "react-router-dom";
-import BatchIntakePage from "./pages/IntakeForms";
+import BatchInventoryPage from "./pages/BatchInventory";
 import AddProductPage from "./pages/Product";
 import StockAdjustmentPage from "./pages/StockAdjustment";
 import Dashboard from "./pages/Dashboard";
@@ -15,7 +15,8 @@ function App() {
         {/* Routes WITH Navbar */}
         <Route element={<MainLayout />}>
           <Route path="/" element={<Dashboard />} />
-          <Route path="/batches" element={<BatchIntakePage />}></Route>
+          <Route path="/batches" element={<BatchInventoryPage />} />
+          <Route path="/batches/new" element={<BatchInventoryPage />} />
           <Route path="/add" element={<AddProductPage />}></Route>
           <Route path="/adjustment" element={<StockAdjustmentPage />}></Route>
           <Route path="/alert" element={<ExpiryAlerts />} />
