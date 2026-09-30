@@ -110,7 +110,7 @@ const Auth = () => {
       <div className="w-full min-h-screen overflow-hidden  bg-white shadow-2xl md:col-span-2 md:grid md:grid-cols-2 grid-cols-1 grid">
         {/* Left/Hero Panel */}
         <div
-          className={`flex flex-col justify-between bg-green-500  rounded-b-3xl md:rounded-b-none p-8 text-white transition-all duration-700 ease-in-out md:p-12 ${
+          className={`flex flex-col justify-between bg-green-900/90  rounded-b-3xl md:rounded-b-none p-8 text-white transition-all duration-700 ease-in-out md:p-12 ${
             isSignUp 
               ? "md:order-1 md:translate-x-0 md:rounded-r-4xl" 
               : "md:order-2 md:translate-x-0 md:rounded-l-4xl"
@@ -158,14 +158,21 @@ const Auth = () => {
           <div
             key={tab}
             className="w-full max-w-md space-y-6 transition-all duration-500 ease-in-out animate-fadeIn">
-            <div className="text-center">
-              <p className=" font-bold text-green-800 md:text-xl">
-                {isSignUp ? "Create An Account" : <div className="h- w-24 flex gap-2.5">Sign In to <img
-              src="xpire-green.png"
-              alt="Xpire Logo"
-              className="h-full w-full object-contain"
-            /></div>}
-              </p>
+            <div className="text-center w-full">
+              <div className="flex justify-center font-bold text-green-800 md:text-xl">
+              {isSignUp ? (
+                "Create An Account"
+              ) : (
+                <div className="flex items-center gap-2 whitespace-nowrap">
+                  <span>Sign In To</span>
+                  <img
+                    src="xpire-green.png"
+                    alt="Xpire Logo"
+                    className="h-8 w-auto object-contain"
+                  />
+    </div>
+  )}
+</div>
               <p className="mt-2 text-sm text-gray-500">
                 {isSignUp
                   ? "Fill in your information below"
@@ -246,7 +253,7 @@ const Auth = () => {
                 </p>
               )}
 
-              <Button type="submit" className="w-full" disabled={isSubmitting}>
+              <Button type="submit" className="w-full bg-green-900/70" disabled={isSubmitting}>
                 {isSubmitting
                   ? "Please wait..."
                   : isSignUp
