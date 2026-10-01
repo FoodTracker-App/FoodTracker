@@ -45,20 +45,23 @@ app.use("/api", (req, res, next) => {
   }
   next();
 });
-const createAuthLimiter = (action) => rateLimit({
-  windowMs: 15 * 60 * 1000,
-  limit: 10,
-  standardHeaders: "draft-8",
-  legacyHeaders: false,
-  handler: (req, res, next) =>
-    next(
-      httpError(
-        429,
-        "RATE_LIMITED",
-        `Too many ${action} attempts. Try again later.`,
-      ),
-    ),
-});
+const createAuthLimiter = (action) => {
+  return rateLimit({
+    windowMs: 15 * 60 * 1000,
+    limit: 10,
+    standardHeaders: "draft-8",
+    legacyHeaders: false,
+    handler: (req, res, next) => {
+      next(
+        httpError(
+          429,
+          "RATE_LIMITED",
+          `Too many ${action} attempts. Try again later.`,
+        ),
+      );
+    },
+  });
+};
 const loginLimiter = createAuthLimiter("login");
 const signupLimiter = createAuthLimiter("sign-up");
 app.use("/api/auth/login", (req, res, next) =>
@@ -69,6 +72,12 @@ app.use("/api/auth/signup", (req, res, next) =>
 );
 
 app.use(express.json());
+
+app.get("/health", (req, res) => {
+  res.status(200).json({
+    status: "ok",
+  });
+});
 
 app.use("/api/auth", authRoutes);
 app.use("/api/products", requireAuth, productRoutes);
