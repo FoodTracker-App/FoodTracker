@@ -256,11 +256,7 @@ function ExpiryAlerts() {
       <div className="mx-auto max-w-7xl">
         <header className="mb-7 flex flex-col justify-between gap-5 sm:flex-row sm:items-end">
           <div>
-            <div className="mb-2 flex flex-wrap items-center gap-2 text-sm text-slate-500">
-              <span>Store operations</span>
-              <span aria-hidden="true">/</span>
-              <span>Freshness</span>
-            </div>
+           
             <h1 className="text-2xl font-semibold tracking-tight text-slate-900">
               Expiry alerts
             </h1>
@@ -278,17 +274,7 @@ function ExpiryAlerts() {
           </Link>
         </header>
 
-        <div className="mb-5 flex items-start gap-3 rounded-lg border border-slate-200 bg-white px-4 py-3 text-sm text-slate-600">
-          <span className="mt-0.5 rounded-md bg-slate-100 p-1.5 text-slate-600">
-            <CalendarDays aria-hidden="true" size={16} />
-          </span>
-          <p>
-            <span className="font-semibold text-slate-800">
-              Live inventory.
-            </span>{" "}
-            Expiry data is being read from the connected backend.
-          </p>
-        </div>
+        
 
         <section
           aria-label="Batch counts by expiry status"
