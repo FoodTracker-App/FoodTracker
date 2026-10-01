@@ -209,8 +209,7 @@ function Dashboard() {
         <header className="mb-7 flex flex-col justify-between gap-5 md:flex-row md:items-end">
           <div>
             <div className="mb-2 flex flex-wrap items-center gap-2 text-sm text-slate-500">
-              <span>Store operations</span>
-              <span aria-hidden="true">/</span>
+              
               <span>{dateLabel}</span>
             </div>
             <h1 className="font-semibold text-gray-800 sm:text-xl lg:text-2xl">
@@ -363,9 +362,7 @@ function Dashboard() {
                 </li>
               ))}
             </ul>
-            <p className="mt-5 border-t border-slate-100 pt-4 text-xs text-slate-500">
-              {locations.length} locations in this demo snapshot
-            </p>
+            
           </article>
         </section>
 
@@ -476,13 +473,7 @@ function Dashboard() {
           )}
         </section>
 
-        <footer className="mt-5 flex flex-col gap-1 text-xs text-slate-500 sm:flex-row sm:items-center sm:justify-between">
-          <p className="inline-flex items-center gap-1">
-            <Boxes aria-hidden="true" size={13} />
-            {batches.length} batches · {productsCount} products ·{" "}
-            {locations.length} locations
-          </p>
-        </footer>
+        
       </div>
     </main>
   );
