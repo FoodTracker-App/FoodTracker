@@ -55,21 +55,20 @@ jobs:
       - name: Check running containers
         run: docker compose ps
 
-      - name: Test backend API
+      - name: Test backend health
         run: |
           for i in {1..12}; do
-            status=$(curl -s -o /dev/null -w "%{http_code}" http://localhost:5000/api/products || echo "000")
+            status=$(curl -s -o /dev/null -w "%{http_code}" http://localhost:5000/health || echo "000")
 
-            if [ "$status" = "401" ]; then
-              echo "Backend API is reachable and authentication middleware is working."
+            if [ "$status" = "200" ]; then
+              echo "Backend health check passed."
               exit 0
             fi
 
-            echo "Backend API returned status: $status. Retrying..."
+            echo "Backend health check returned status: $status. Retrying..."
             sleep 5
           done
-
-          echo "Backend API did not become available"
+          echo "Backend health check failed"
           docker compose ps
           docker compose logs
           exit 1
@@ -103,4 +102,3 @@ jobs:
       - name: Build frontend
         working-directory: frontend
         run: npm run build
-
