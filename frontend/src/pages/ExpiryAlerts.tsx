@@ -18,8 +18,8 @@ import {
   expiryCopy,
   formatDate,
   getExpiryBucket,
-} from "../utils/demoInventory";
-import type { ExpiryBucket } from "../utils/demoInventory";
+} from "../utils/inventoryDates";
+import type { ExpiryBucket } from "../utils/inventoryDates";
 
 type StatusFilter = "all" | ExpiryBucket;
 
