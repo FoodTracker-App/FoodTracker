@@ -2,7 +2,6 @@ import { useEffect, useMemo, useState } from "react";
 import {
   ArrowDownWideNarrow,
   ArrowRight,
-  Boxes,
   CalendarDays,
   CheckCircle2,
   Clock3,
@@ -586,6 +585,7 @@ function BatchInventory() {
       </div>
 
       <BatchIntakeModal
+        key={isCreateOpen ? "open" : "closed"}
         isOpen={isCreateOpen}
         products={products}
         locations={storageLocations}
@@ -599,3 +599,4 @@ function BatchInventory() {
 }
 
 export default BatchInventory;
+

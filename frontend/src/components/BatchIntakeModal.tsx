@@ -76,18 +76,6 @@ export default function BatchIntakeModal({
     if (!isOpen && dialog.open) dialog.close();
   }, [isOpen]);
 
-  useEffect(() => {
-    if (!isOpen) return;
-    setForm({
-      productId: products[0]?.id ?? "",
-      location: locations[0]?.id ?? "",
-      lot: "",
-      quantity: "1",
-      expiryDate: "",
-    });
-    setErrors({});
-  }, [isOpen, locations, products]);
-
   function updateField(field: keyof BatchForm, value: string) {
     setForm((current) => ({ ...current, [field]: value }));
     setErrors((current) => ({ ...current, [field]: undefined }));
