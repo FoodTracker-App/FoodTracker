@@ -1,4 +1,4 @@
-﻿import express from "express";
+import express from "express";
 import cors from "cors";
 import "dotenv/config";
 import helmet from "helmet";
@@ -76,29 +76,38 @@ app.use("/api/storage-locations", requireAuth, storageLocationRoutes);
 app.use("/api/batches", requireAuth, batchRoutes);
 app.use("/api/stock-movements", requireAuth, stockMovementRoutes);
 
+app.get("/health", (req, res) => {
+  res.status(200).json({ status: "ok" });
+});
+
 app.use((req, res, next) =>
   next(httpError(404, "NOT_FOUND", "Endpoint not found.")),
 );
 app.use(errorHandler);
 
-checkDatabaseConnection()
-  .then(() => {
-    const server = app.listen(PORT, () => {
-      console.log(`App is running on port ${PORT}`);
+if (process.env.NODE_ENV !== "production") {
+  checkDatabaseConnection()
+    .then(() => {
+      const server = app.listen(PORT, () => {
+        console.log(`App is running on port ${PORT}`);
+      });
+
+      server.on("error", (err) => {
+        if (err.code === "EACCES") {
+          console.error(
+            "Port is reserved by Windows. Please set a different PORT in backend/.env.",
+          );
+        } else {
+          console.error("Server failed to listen:", err.code);
+        }
+      });
+    })
+    .catch(() => {
+      console.error("Failed to start the server: database connection failed.");
+      process.exit(1);
     });
-    server.on("error", (err) => {
-      if (err.code === "EACCES") {
-        console.error(
-          "Port is reserved by Windows. Please set a different PORT in backend/.env.",
-        );
-      } else {
-        console.error("Server failed to listen:", err.code);
-      }
-    });
-  })
-  .catch(() => {
-    console.error("Failed to start the server: database connection failed.");
-    process.exit(1);
-  });
+}
 
 export default app;
+
+
