@@ -2,7 +2,6 @@ import { useEffect, useMemo, useState } from "react";
 import {
   ArrowDownWideNarrow,
   ArrowRight,
-  Boxes,
   CalendarDays,
   CheckCircle2,
   Clock3,
