@@ -222,14 +222,14 @@ function Dashboard() {
           <div className="flex flex-wrap gap-2">
             <Link
               to="/batches"
-              className="inline-flex min-h-11 items-center gap-2 rounded-lg border border-slate-300 bg-white px-4 text-sm font-semibold text-slate-700 transition hover:bg-slate-50 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-emerald-700"
+              className="inline-flex min-h-11 items-center gap-2 rounded-lg border border-slate-300 bg-white px-4 text-sm font-semibold text-slate-700 transition hover:bg-slate-50  focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-emerald-700"
             >
               <Boxes aria-hidden="true" size={17} />
               View batches
             </Link>
             <Link
               to="/add"
-              className="inline-flex min-h-11 items-center gap-2 rounded-lg bg-emerald-800 px-4 text-sm font-semibold text-white transition hover:bg-emerald-900 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-emerald-700"
+              className="inline-flex min-h-11 items-center gap-2 rounded-lg bg-emerald-800 px-4 text-sm font-semibold text-white transition hover:bg-emerald-900  focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-emerald-700"
             >
               <Package aria-hidden="true" size={17} />
               Register product
@@ -383,7 +383,7 @@ function Dashboard() {
             </div>
             <Link
               to="/batches"
-              className="inline-flex min-h-10 items-center gap-1 self-start rounded-md px-2 text-sm font-semibold text-emerald-800 hover:bg-emerald-50 focus-visible:outline focus-visible:outline-2 focus-visible:outline-emerald-700 sm:self-auto"
+              className="inline-flex min-h-10 items-center gap-1 self-start rounded-md px-2 text-sm font-semibold text-emerald-800 hover:bg-emerald-50  focus-visible:outline-2 focus-visible:outline-emerald-700 sm:self-auto"
             >
               Open batch inventory
               <ArrowRight aria-hidden="true" size={16} />
@@ -401,7 +401,7 @@ function Dashboard() {
             </div>
           ) : (
             <div className="overflow-x-auto">
-              <table className="w-full min-w-[720px] border-collapse text-left">
+              <table className="w-full min-w-180 border-collapse text-left">
                 <thead>
                   <tr className="bg-slate-50 text-xs font-semibold text-slate-500">
                     <th scope="col" className="px-6 py-3">
