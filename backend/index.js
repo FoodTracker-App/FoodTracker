@@ -100,3 +100,5 @@ checkDatabaseConnection()
     console.error("Failed to start the server: database connection failed.");
     process.exit(1);
   });
+
+export default app;
