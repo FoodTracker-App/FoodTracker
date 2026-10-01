@@ -7,7 +7,9 @@
     "test": "node --test",
     "dev": "nodemon index.js",
     "start": "node index.js",
-    "seed": "prisma db seed"
+    "seed": "prisma db seed",
+    "build": "prisma generate",
+    "postinstall": "prisma generate"
   },
   "keywords": [],
   "author": "",
@@ -28,7 +30,7 @@
     "pg": "^8.23.0"
   },
   "devDependencies": {
-    "prisma": "^8.0.0-rc.19"
+    "prisma": "^7.10.0"
   },
   "engines": {
     "node": "22.x"
