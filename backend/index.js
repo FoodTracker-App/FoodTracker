@@ -7,6 +7,9 @@ import { prisma, checkDatabaseConnection } from "./config/db.js";
 import { getAuthSettings } from "./config/auth.js";
 import authRoutes from "./routes/authRoutes.js";
 import productRoutes from "./routes/productRoutes.js";
+import storageLocationRoutes from "./routes/storageLocationRoutes.js";
+import batchRoutes from "./routes/batchRoutes.js";
+import stockMovementRoutes from "./routes/stockMovementRoutes.js";
 import { requireAuth } from "./middleware/requireAuth.js";
 import { errorHandler } from "./middleware/errorHandler.js";
 import { httpError } from "./utils/errors.js";
@@ -17,10 +20,19 @@ const PORT = process.env.PORT || 5000;
 
 app.use(helmet());
 app.use(cors({ origin, credentials: true }));
-app.use(["/api/auth", "/api/products"], (req, res, next) => {
-  res.set("Cache-Control", "no-store");
-  next();
-});
+app.use(
+  [
+    "/api/auth",
+    "/api/products",
+    "/api/storage-locations",
+    "/api/batches",
+    "/api/stock-movements",
+  ],
+  (req, res, next) => {
+    res.set("Cache-Control", "no-store");
+    next();
+  },
+);
 app.use("/api", (req, res, next) => {
   if (
     !["GET", "HEAD", "OPTIONS"].includes(req.method) &&
@@ -33,7 +45,7 @@ app.use("/api", (req, res, next) => {
   }
   next();
 });
-const loginLimiter = rateLimit({
+const createAuthLimiter = (action) => rateLimit({
   windowMs: 15 * 60 * 1000,
   limit: 10,
   standardHeaders: "draft-8",
@@ -43,18 +55,26 @@ const loginLimiter = rateLimit({
       httpError(
         429,
         "RATE_LIMITED",
-        "Too many login attempts. Try again later.",
+        `Too many ${action} attempts. Try again later.`,
       ),
     ),
 });
+const loginLimiter = createAuthLimiter("login");
+const signupLimiter = createAuthLimiter("sign-up");
 app.use("/api/auth/login", (req, res, next) =>
   req.method === "POST" ? loginLimiter(req, res, next) : next(),
+);
+app.use("/api/auth/signup", (req, res, next) =>
+  req.method === "POST" ? signupLimiter(req, res, next) : next(),
 );
 
 app.use(express.json());
 
 app.use("/api/auth", authRoutes);
 app.use("/api/products", requireAuth, productRoutes);
+app.use("/api/storage-locations", requireAuth, storageLocationRoutes);
+app.use("/api/batches", requireAuth, batchRoutes);
+app.use("/api/stock-movements", requireAuth, stockMovementRoutes);
 
 app.use((req, res, next) =>
   next(httpError(404, "NOT_FOUND", "Endpoint not found.")),

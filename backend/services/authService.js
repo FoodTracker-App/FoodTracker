@@ -1,3 +1,4 @@
+import { randomUUID } from "node:crypto";
 import bcrypt from "bcrypt";
 import jwt from "jsonwebtoken";
 import { prisma } from "../config/db.js";
@@ -13,6 +14,18 @@ const identitySelect = {
   isActive: true,
 };
 
+const createSession = (user) => {
+  const token = jwt.sign({}, getAuthSettings().secret, {
+    algorithm: "HS256",
+    subject: user.id,
+    expiresIn: ACCESS_TOKEN_SECONDS,
+  });
+  return {
+    token,
+    user: { id: user.id, fullName: user.fullName, email: user.email },
+  };
+};
+
 export const login = async ({ email, password }) => {
   const user = await prisma.user.findUnique({
     where: { email },
@@ -25,15 +38,41 @@ export const login = async ({ email, password }) => {
   if (!user || !matches || !user.isActive) {
     throw httpError(401, "INVALID_CREDENTIALS", "Invalid email or password.");
   }
-  const token = jwt.sign({}, getAuthSettings().secret, {
-    algorithm: "HS256",
-    subject: user.id,
-    expiresIn: ACCESS_TOKEN_SECONDS,
-  });
-  return {
-    token,
-    user: { id: user.id, fullName: user.fullName, email: user.email },
-  };
+  return createSession(user);
+};
+
+const isDuplicateEmail = (error) => {
+  if (error.code !== "P2002") return false;
+  const constraint = error.meta?.driverAdapterError?.cause?.constraint;
+  const target = error.meta?.target ?? constraint?.fields ?? constraint?.index;
+  const names = Array.isArray(target) ? target : [target];
+  return names.some((name) => ["email", "users_email_key"].includes(name));
+};
+
+export const signup = async ({ firstName, lastName, email, password }) => {
+  const passwordHash = await bcrypt.hash(password, 12);
+  let user;
+  try {
+    user = await prisma.user.create({
+      data: {
+        id: randomUUID(),
+        fullName: `${firstName} ${lastName}`,
+        email,
+        passwordHash,
+      },
+      select: identitySelect,
+    });
+  } catch (error) {
+    if (isDuplicateEmail(error)) {
+      throw httpError(
+        409,
+        "EMAIL_ALREADY_EXISTS",
+        "An account with this email already exists.",
+      );
+    }
+    throw error;
+  }
+  return createSession(user);
 };
 
 export const authenticate = async (token) => {
