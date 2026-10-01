@@ -3,13 +3,13 @@ name: FoodTracker CI
 on:
   push:
     branches:
-      - main
+      - master
       - backend
       - frontend
       - devops/setup-infrastructure
   pull_request:
     branches:
-      - main
+      - master
 
 jobs:
   backend:
@@ -46,6 +46,7 @@ jobs:
           POSTGRES_USER=foodtracker
           POSTGRES_PASSWORD=ci-password
           JWT_ACCESS_SECRET=ci-only-secret
+          CLIENT_ORIGIN=http://localhost:5173
           EOF
 
       - name: Start application stack
@@ -76,3 +77,30 @@ jobs:
       - name: Stop application stack
         if: always()
         run: docker compose down -v
+
+  frontend:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+          cache-dependency-path: frontend/package-lock.json
+
+      - name: Install dependencies
+        working-directory: frontend
+        run: npm ci
+
+      - name: Run lint
+        working-directory: frontend
+        run: npm run lint
+
+      - name: Build frontend
+        working-directory: frontend
+        run: npm run build
+
