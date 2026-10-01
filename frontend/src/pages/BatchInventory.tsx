@@ -258,11 +258,7 @@ function BatchInventory() {
       <div className="mx-auto max-w-7xl">
         <header className="mb-7 flex flex-col justify-between gap-5 sm:flex-row sm:items-end">
           <div>
-            <div className="mb-2 flex items-center gap-2 text-sm text-slate-500">
-              <span>Store operations</span>
-              <span aria-hidden="true">/</span>
-              <span>Inventory</span>
-            </div>
+            
             <h1 className="text-2xl font-semibold tracking-tight text-slate-900">
               Batch inventory
             </h1>
@@ -285,14 +281,6 @@ function BatchInventory() {
           </div>
         </header>
 
-        <div className="mb-5 flex flex-wrap items-center gap-x-4 gap-y-2 rounded-lg border border-slate-200 bg-white px-4 py-3 text-sm text-slate-600">
-          <span className="inline-flex items-center gap-2 font-medium text-slate-800">
-            <Boxes aria-hidden="true" className="text-emerald-800" size={17} />
-            Live inventory
-          </span>
-          <span className="hidden h-4 border-l border-slate-200 sm:block" />
-          <span>Showing batches from the connected backend.</span>
-        </div>
 
         {notice && (
           <div
