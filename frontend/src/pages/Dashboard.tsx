@@ -181,9 +181,7 @@ function Dashboard() {
             <p className="text-base font-semibold text-slate-800">
               Loading stock overview…
             </p>
-            <p className="mt-2 text-sm text-slate-500">
-              Fetching the latest batches from the backend.
-            </p>
+            
           </div>
         </div>
       </main>

@@ -129,7 +129,7 @@ const Navbar = () => {
                       onClick={() => setMobileMenuOpen(false)}
                       className={`flex items-center gap-3 rounded-lg border px-4 py-2.5 text-sm font-semibold transition outline-none focus:outline-none focus:ring-0 ${
                         active
-                          ? "border-green-600 bg-green-600 text-white shadow-sm"
+                          ? "border-green-900 bg-green-900 text-white shadow-sm"
                           : "border-slate-200 bg-slate-50/50 text-slate-700 shadow-sm hover:border-slate-300 hover:bg-slate-100"
                       }`}
                     >
